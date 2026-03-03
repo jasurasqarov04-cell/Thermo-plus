@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <title>THERMO PLUS — Aloqa</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <header class="header">
+    <a class="logo" href="about.html">
+      <div class="logo-box">🔥</div>
+      <div>
+        <div class="logo-text">THERMO PLUS</div>
+        <div class="logo-sub" id="logo-sub">Bazalt vata ishlab chiqaruvchi</div>
+      </div>
+    </a>
+    <div class="lang-wrap">
+      <button class="lang-btn active" data-lang="uz">UZ</button>
+      <button class="lang-btn" data-lang="ru">RU</button>
+    </div>
+  </header>
+
+  <div class="page">
+    <!-- COMPANY HERO -->
+    <div style="background:linear-gradient(140deg,#1a1a1a,#2d1a0a);padding:20px;border-bottom:2px solid #E85D04">
+      <div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:white;margin-bottom:3px">THERMO PLUS</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:10px">СП ООО "KHOREZM INSULATION GROUP"</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.65);line-height:1.6" id="comp-addr">
+        🏭 Xorazm viloyati, Urganch sh., Sanoatchilar ko'chasi, 1 — ishlab chiqarish<br/>
+        🏢 Toshkent sh., Yunusobod tumani, Shahrisabz ko'chasi, 2 — ofis
+      </div>
+    </div>
+
+    <div class="section" style="padding-top:16px" id="contacts-body">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-item" href="about.html" data-page="home"><span class="nav-icon">🏠</span><span class="nav-label" data-i18n="home">Asosiy</span></a>
+    <a class="nav-item" href="index.html" data-page="catalog"><span class="nav-icon">📦</span><span class="nav-label" data-i18n="catalog">Katalog</span></a>
+    <a class="nav-item" href="calculator.html" data-page="calc"><span class="nav-icon">🧮</span><span class="nav-label" data-i18n="calculator">Kalkulyator</span></a>
+    <a class="nav-item" href="favorites.html" data-page="favs"><span class="nav-icon">❤️</span><span class="nav-label" data-i18n="favorites">Sevimlilar</span></a>
+    <a class="nav-item active" href="contacts.html" data-page="contacts"><span class="nav-icon">📞</span><span class="nav-label" data-i18n="contacts">Aloqa</span></a>
+  </nav>
+
+</div>
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+<script>
+if (window.Telegram?.WebApp) Telegram.WebApp.ready();
+
+const CONTACTS_TX = {
+  uz: {
+    logoSub: "Bazalt vata ishlab chiqaruvchi",
+    addr: "🏭 Xorazm viloyati, Urganch sh., Sanoatchilar ko'chasi, 1 — ishlab chiqarish<br/>🏢 Toshkent sh., Yunusobod tumani, Shahrisabz ko'chasi, 2 — ofis",
+    contacts: [
+      { icon:'📞', key:'TELEFON',  val:'+998 90 150 00 00', href:'tel:+998901500000',         act:'Qo\'ng\'iroq' },
+      { icon:'✉️', key:'EMAIL',    val:'info@thermoplus.uz',href:'mailto:info@thermoplus.uz',  act:'Yozish' },
+      { icon:'🌐', key:'SAYT',     val:'thermoplus.uz',     href:'https://en.thermoplus.uz',   act:'Ochish' },
+      { icon:'💬', key:'TELEGRAM', val:'+998 90 150 00 00', href:'https://t.me/+998901500000', act:'Yozish' },
+      { icon:'📱', key:'WHATSAPP', val:'+998 90 150 00 00', href:'https://wa.me/998901500000', act:'Yozish' },
+    ],
+    hours: [ ['Dushanba–Juma','9:00–18:00'], ['Shanba','9:00–15:00'], ['Yakshanba','Yopiq'] ],
+    hoursTitle: '🕐 Ish vaqti',
+    addrTitle: '📍 Manzillar',
+    addrRows: [
+      ['🏭','Ishlab chiqarish','Xorazm viloyati, Urganch sh., Sanoatchilar ko\'chasi, 1'],
+      ['🏢','Sotish ofisi','Toshkent sh., Yunusobod tumani, Shahrisabz ko\'chasi, 2'],
+    ],
+    certTitle: '🏅 Sertifikatlar',
+    certs: ['GOST R 52953-2008','ISO 9001:2015','Yong\'in sertifikati НГ','Ekologik sertifikat'],
+    dealerTitle: '🤝 Diler bo\'ling',
+    dealerText: 'Butun O\'zbekiston bo\'ylab distribyutorlarni taklif etamiz. Qulay hamkorlik shartlari.',
+    dealerBtn: '📞 Qo\'ng\'iroq qilish',
+  },
+  ru: {
+    logoSub: "Производитель базальтовой ваты",
+    addr: "🏭 Хорезмская обл., г.Ургенч, ул.Саноатчилар, 1 — производство<br/>🏢 Ташкент, Юнусабадский р-н, ул.Шахрисабз, 2 — офис",
+    contacts: [
+      { icon:'📞', key:'ТЕЛЕФОН',  val:'+998 90 150 00 00', href:'tel:+998901500000',         act:'Позвонить' },
+      { icon:'✉️', key:'EMAIL',    val:'info@thermoplus.uz',href:'mailto:info@thermoplus.uz',  act:'Написать' },
+      { icon:'🌐', key:'САЙТ',     val:'thermoplus.uz',     href:'https://en.thermoplus.uz',   act:'Открыть' },
+      { icon:'💬', key:'TELEGRAM', val:'+998 90 150 00 00', href:'https://t.me/+998901500000', act:'Написать' },
+      { icon:'📱', key:'WHATSAPP', val:'+998 90 150 00 00', href:'https://wa.me/998901500000', act:'Написать' },
+    ],
+    hours: [ ['Понедельник–Пятница','9:00–18:00'], ['Суббота','9:00–15:00'], ['Воскресенье','Выходной'] ],
+    hoursTitle: '🕐 Режим работы',
+    addrTitle: '📍 Адреса',
+    addrRows: [
+      ['🏭','Производство','Хорезмская обл., г.Ургенч, ул.Саноатчилар, 1'],
+      ['🏢','Офис продаж','Ташкент, Юнусабадский р-н, ул.Шахрисабз, 2'],
+    ],
+    certTitle: '🏅 Сертификаты',
+    certs: ['ГОСТ Р 52953-2008','ISO 9001:2015','Пожарный сертификат НГ','Экологический сертификат'],
+    dealerTitle: '🤝 Стать дилером',
+    dealerText: 'Приглашаем дистрибьюторов по всему Узбекистану. Выгодные условия сотрудничества.',
+    dealerBtn: '📞 Позвонить',
+  }
+};
+
+function renderContacts() {
+  const lang = getCurrentLang();
+  const tx = CONTACTS_TX[lang];
+  document.getElementById('logo-sub').textContent = tx.logoSub;
+  document.getElementById('comp-addr').innerHTML = tx.addr;
+
+  const contactsHtml = tx.contacts.map(c => `
+    <div class="contact-card">
+      <div class="contact-icon-box">${c.icon}</div>
+      <div>
+        <div class="contact-key">${c.key}</div>
+        <div class="contact-val">${c.val}</div>
+      </div>
+      <div class="contact-act">
+        <a href="${c.href}" target="_blank" rel="noreferrer" style="text-decoration:none">
+          <button class="contact-act-btn">${c.act}</button>
+        </a>
+      </div>
+    </div>`).join('');
+
+  const hoursHtml = tx.hours.map(([d,time]) => `
+    <div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid #f3f4f6">
+      <span style="color:#6B7280">${d}</span>
+      <b style="color:${time.includes('Yopiq')||time.includes('Выходной')?'#ef4444':'#16a34a'}">${time}</b>
+    </div>`).join('');
+
+  const addrHtml = tx.addrRows.map(([icon,type,addr]) => `
+    <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6">
+      <span style="font-size:18px">${icon}</span>
+      <div>
+        <div style="font-size:10px;color:#9CA3AF;font-weight:600;margin-bottom:2px">${type}</div>
+        <div style="font-size:12px;font-weight:600">${addr}</div>
+      </div>
+    </div>`).join('');
+
+  const certHtml = tx.certs.map(c => `
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0">
+      <span style="color:#E85D04;font-size:16px">✓</span>${c}
+    </div>`).join('');
+
+  document.getElementById('contacts-body').innerHTML = `
+    ${contactsHtml}
+    <div class="card" style="padding:14px;margin-bottom:12px">
+      <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;margin-bottom:10px">${tx.hoursTitle}</div>
+      ${hoursHtml}
+    </div>
+    <div class="card" style="padding:14px;margin-bottom:12px">
+      <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;margin-bottom:10px">${tx.addrTitle}</div>
+      ${addrHtml}
+    </div>
+    <div class="card" style="padding:14px;margin-bottom:12px">
+      <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;margin-bottom:10px">${tx.certTitle}</div>
+      ${certHtml}
+    </div>
+    <div class="promo-banner" style="margin-bottom:16px">
+      <div class="promo-title">${tx.dealerTitle}</div>
+      <div class="promo-text">${tx.dealerText}</div>
+      <a href="tel:+998901500000" style="text-decoration:none">
+        <button class="btn-white">${tx.dealerBtn}</button>
+      </a>
+    </div>`;
+}
+
+function onLangChange() { renderContacts(); }
+initLangButtons();
+renderContacts();
+</script>
+</body>
+</html>
