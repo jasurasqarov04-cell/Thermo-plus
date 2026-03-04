@@ -90,8 +90,8 @@ function showToast(msg) {
 
 // ─── CATEGORY MAPS ───────────────────────────────────────────────
 const CAT_EMOJI = {
-  facade: '🧱', vent: '🌬️', roof: '🏗️',
-  floor: '🔲', universal: '⭐', sandwich: '🏭'
+  facade: '', vent: '', roof: '',
+  floor: '', universal: '', sandwich: ''
 };
 
 const CAT_LABELS = {
