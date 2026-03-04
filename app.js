@@ -328,7 +328,7 @@ async function loadProducts() {
 }
 
 // ─── BITRIX24 ────────────────────────────────────────────────────
-const B24_WEBHOOK = 'https://YOUR_DOMAIN.bitrix24.ru/rest/1/YOUR_CODE';
+const B24_WEBHOOK = 'https://sagrroup.bitrix24.ru/rest/848/bqx4ulfna4gsrmpw/profile.json';
 const B24_MANAGER = 1;
 
 async function sendToB24(formData, cartItems) {
