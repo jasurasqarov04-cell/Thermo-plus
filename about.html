@@ -161,10 +161,44 @@
 <script src="app.js"></script>
 <script>
 if (window.Telegram?.WebApp) Telegram.WebApp.ready();
+// SVG icon set — Lucide/Feather style, currentColor
+const FEAT_ICONS = [
+  // 1. Fire — НГ non-combustible
+  `<svg xmlns="http://www.w3.org/2000/svg" class="ic-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2c0 4-4 6-4 10a4 4 0 0 0 8 0c0-4-4-6-4-10z"/>
+    <path d="M12 12c0 2-1.5 3-1.5 4.5a1.5 1.5 0 0 0 3 0C13.5 15 12 14 12 12z"/>
+  </svg>`,
+  // 2. Leaf — eco-friendly
+  `<svg xmlns="http://www.w3.org/2000/svg" class="ic-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 20c0-6 4-10 10-16 0 6-4 10-10 16z"/>
+    <path d="M6 20c2-3 4-5 6-8"/>
+  </svg>`,
+  // 3. Muted speaker — sound insulation
+  `<svg xmlns="http://www.w3.org/2000/svg" class="ic-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+    <line x1="17" y1="9" x2="23" y2="15"/>
+    <line x1="23" y1="9" x2="17" y2="15"/>
+  </svg>`,
+  // 4. Water droplet — moisture resistant
+  `<svg xmlns="http://www.w3.org/2000/svg" class="ic-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3C12 3 5 11 5 15.5a7 7 0 0 0 14 0C19 11 12 3 12 3z"/>
+  </svg>`,
+  // 5. Clock — 50+ years lifetime
+  `<svg xmlns="http://www.w3.org/2000/svg" class="ic-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/>
+    <polyline points="12 7 12 12 15.5 15.5"/>
+  </svg>`,
+  // 6. Flag on pole — made in Uzbekistan
+  `<svg xmlns="http://www.w3.org/2000/svg" class="ic-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="4" y1="4" x2="4" y2="20"/>
+    <path d="M4 4C4 4 8 2 12 4C16 6 20 4 20 4L20 14C20 14 16 16 12 14C8 12 4 14 4 14"/>
+  </svg>`,
+];
+
 const ABOUT_TX = {
-  uz:{logoSub:"Bazalt vata ishlab chiqaruvchi",eyebrow:"🇺🇿 Urgench ishlab chiqarish",heroTitle:"Bazalt vata —\n<b>yangi avlod</b>\nissiqlik izolatsiyasi",heroSub:"Toshning tabiiy kuchini ochib, zamonaviy qurilishni boyitamiz",stat1:"Yillik quvvat",stat2:"Mahsulot",stat3:"Yil xizmat",stat4:"Bardoshlik",whyTitle:"Nima uchun <span>Thermo Plus?</span>",feats:[["🔥","НГ — Yong'inga chidamli","Eng yuqori yong'in xavfsizligi sinfi"],["🌿","Ekologik toza","100% bazalt tog' jinslari"],["🔇","Ovoz izolyatsiyasi","52 dB gacha ovoz so'rish"],["💧","Nam bardosh","Suv so'rmaydi, xossalarini saqlaydi"],["⏱️","50+ yil","Kafolatlangan foydalanish muddati"],["🏭","O'zbekistonda","Import analoglaridan 25–30% arzon"]],reviewTitle:"Mijozlar sharhlari",certTitle:"🏅 <span>Sertifikatlar</span>",calcPromoTitle:"Bepul hisoblash",calcPromoText:"Sizning loyihangiz uchun qancha material kerakligini aniq hisoblaymiz",calcPromoBtn:"Hisoblashni boshlash →"},
-  ru:{logoSub:"Производитель базальтовой ваты",eyebrow:"🇺🇿 Производство в Ургенче",heroTitle:"Базальтовая вата —\n<b>новое поколение</b>\nтеплоизоляции",heroSub:"Раскрываем природную силу камня для обогащения современного строительства",stat1:"Годовая мощность",stat2:"Продуктов",stat3:"Лет службы",stat4:"Устойчивость",whyTitle:"Почему <span>Thermo Plus?</span>",feats:[["🔥","НГ — Негорючий","Высший класс пожарной безопасности"],["🌿","Экологично","100% базальтовые горные породы"],["🔇","Звукоизоляция","Поглощение до 52 дБ"],["💧","Влагостойкий","Не впитывает воду, сохраняет свойства"],["⏱️","50+ лет","Гарантированный срок службы"],["🏭","Узбекистан","На 25–30% дешевле импортных аналогов"]],reviewTitle:"Отзывы клиентов",certTitle:"🏅 <span>Сертификаты</span>",calcPromoTitle:"Бесплатный расчёт",calcPromoText:"Точно рассчитаем сколько материала нужно для вашего проекта",calcPromoBtn:"Начать расчёт →"},
-  en:{logoSub:"Basalt wool manufacturer",eyebrow:"🇺🇿 Production in Urgench, Uzbekistan",heroTitle:"Basalt wool —\n<b>next generation</b>\nthermal insulation",heroSub:"Unlocking the natural power of stone to enrich modern construction",stat1:"Annual capacity",stat2:"Products",stat3:"Years service",stat4:"Resistance",whyTitle:"Why <span>Thermo Plus?</span>",feats:[["🔥","НГ — Non-combustible","Highest fire safety class"],["🌿","Eco-friendly","100% basalt rock, no harmful additives"],["🔇","Sound insulation","Up to 52 dB absorption"],["💧","Moisture resistant","Repels water, retains properties"],["⏱️","50+ years","Guaranteed service life"],["🏭","Made in Uzbekistan","25–30% cheaper than imported"]],reviewTitle:"Client reviews",certTitle:"🏅 <span>Certificates</span>",calcPromoTitle:"Free calculation",calcPromoText:"We'll calculate exactly how much material your project needs",calcPromoBtn:"Start calculating →"}
+  uz:{logoSub:"Bazalt vata ishlab chiqaruvchi",eyebrow:"🇺🇿 Urgench ishlab chiqarish",heroTitle:"Bazalt vata —\n<b>yangi avlod</b>\nissiqlik izolatsiyasi",heroSub:"Toshning tabiiy kuchini ochib, zamonaviy qurilishni boyitamiz",stat1:"Yillik quvvat",stat2:"Mahsulot",stat3:"Yil xizmat",stat4:"Bardoshlik",whyTitle:"Nima uchun <span>Thermo Plus?</span>",feats:[["НГ — Yong'inga chidamli","Eng yuqori yong'in xavfsizligi sinfi"],["Ekologik toza","100% bazalt tog' jinslari"],["Ovoz izolyatsiyasi","52 dB gacha ovoz so'rish"],["Nam bardosh","Suv so'rmaydi, xossalarini saqlaydi"],["50+ yil","Kafolatlangan foydalanish muddati"],["O'zbekistonda","Import analoglaridan 25–30% arzon"]],reviewTitle:"Mijozlar sharhlari",certTitle:"🏅 <span>Sertifikatlar</span>",calcPromoTitle:"Bepul hisoblash",calcPromoText:"Sizning loyihangiz uchun qancha material kerakligini aniq hisoblaymiz",calcPromoBtn:"Hisoblashni boshlash →"},
+  ru:{logoSub:"Производитель базальтовой ваты",eyebrow:"🇺🇿 Производство в Ургенче",heroTitle:"Базальтовая вата —\n<b>новое поколение</b>\nтеплоизоляции",heroSub:"Раскрываем природную силу камня для обогащения современного строительства",stat1:"Годовая мощность",stat2:"Продуктов",stat3:"Лет службы",stat4:"Устойчивость",whyTitle:"Почему <span>Thermo Plus?</span>",feats:[["НГ — Негорючий","Высший класс пожарной безопасности"],["Экологично","100% базальтовые горные породы"],["Звукоизоляция","Поглощение до 52 дБ"],["Влагостойкий","Не впитывает воду, сохраняет свойства"],["50+ лет","Гарантированный срок службы"],["Узбекистан","На 25–30% дешевле импортных аналогов"]],reviewTitle:"Отзывы клиентов",certTitle:"🏅 <span>Сертификаты</span>",calcPromoTitle:"Бесплатный расчёт",calcPromoText:"Точно рассчитаем сколько материала нужно для вашего проекта",calcPromoBtn:"Начать расчёт →"},
+  en:{logoSub:"Basalt wool manufacturer",eyebrow:"🇺🇿 Production in Urgench, Uzbekistan",heroTitle:"Basalt wool —\n<b>next generation</b>\nthermal insulation",heroSub:"Unlocking the natural power of stone to enrich modern construction",stat1:"Annual capacity",stat2:"Products",stat3:"Years service",stat4:"Resistance",whyTitle:"Why <span>Thermo Plus?</span>",feats:[["НГ — Non-combustible","Highest fire safety class"],["Eco-friendly","100% basalt rock, no harmful additives"],["Sound insulation","Up to 52 dB absorption"],["Moisture resistant","Repels water, retains properties"],["50+ years","Guaranteed service life"],["Made in Uzbekistan","25–30% cheaper than imported"]],reviewTitle:"Client reviews",certTitle:"🏅 <span>Certificates</span>",calcPromoTitle:"Free calculation",calcPromoText:"We'll calculate exactly how much material your project needs",calcPromoBtn:"Start calculating →"}
 };
 function renderPage() {
   const lang = getCurrentLang();
@@ -183,8 +217,8 @@ function renderPage() {
   document.getElementById('calc-promo-title').textContent = tx.calcPromoTitle;
   document.getElementById('calc-promo-text').textContent = tx.calcPromoText;
   document.getElementById('calc-promo-btn').textContent = tx.calcPromoBtn;
-  document.getElementById('feature-grid').innerHTML = tx.feats.map(([icon,h,d]) =>
-    `<div class="feature-card"><div class="feature-icon">${icon}</div><div class="feature-title">${h}</div><div class="feature-desc">${d}</div></div>`
+  document.getElementById('feature-grid').innerHTML = tx.feats.map(([h,d], i) =>
+    `<div class="feature-card"><div class="feature-icon">${FEAT_ICONS[i]}</div><div class="feature-title">${h}</div><div class="feature-desc">${d}</div></div>`
   ).join('');
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
 }
