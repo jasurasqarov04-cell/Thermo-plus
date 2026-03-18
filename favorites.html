@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <title>THERMO PLUS — Избранное</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <header class="header">
+    <a class="logo" href="about.html">
+      <div class="logo-mark">
+        <img src="images/logo.png" alt="THERMO PLUS"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <span class="logo-mark-fallback" style="display:none">T+</span>
+      </div>
+      <div>
+        <div class="logo-text">THERMO PLUS</div>
+        <div class="logo-sub">Избранное</div>
+      </div>
+    </a>
+    <div class="lang-wrap">
+      <button class="lang-btn" data-lang="ru">RU</button>
+      <button class="lang-btn" data-lang="uz">UZ</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+  </header>
+
+  <div class="page">
+    <div class="page-header-row">
+      <div class="page-header-title" data-i18n="favorites">Избранное</div>
+    </div>
+    <div class="prod-grid" id="fav-grid"></div>
+    <div class="empty-state hidden" id="fav-empty">
+      <div class="empty-icon" style="color:var(--text-3)">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <div class="empty-title" data-i18n="emptyFav">Нет избранного</div>
+      <div class="empty-text" data-i18n="emptyFavText">Нажмите сердечко на карточке товара</div>
+      <a href="index.html" style="margin-top:20px;text-decoration:none">
+        <button class="btn-red" data-i18n="goToCatalog">В каталог</button>
+      </a>
+    </div>
+  </div>
+
+  <button class="float-cart" id="float-cart-btn" onclick="location.href='checkout.html'" style="display:none">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    <span data-i18n="cart">Корзина</span>
+    <span class="float-badge cart-count">0</span>
+  </button>
+
+  <nav class="bottom-nav">
+    <a class="nav-item" href="about.html">
+      <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></span>
+      <span class="nav-label" data-i18n="home">Главная</span>
+    </a>
+    <a class="nav-item" href="index.html">
+      <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span>
+      <span class="nav-label" data-i18n="catalog">Каталог</span>
+    </a>
+    <a class="nav-item nav-item-cart" href="checkout.html">
+      <span class="nav-icon"><span class="nav-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-count nav-cart-badge" style="display:none">0</span>
+      </span></span>
+      <span class="nav-label" data-i18n="cart">Корзина</span>
+    </a>
+    <a class="nav-item" href="calculator.html">
+      <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="17" x2="12" y2="17"/></svg></span>
+      <span class="nav-label" data-i18n="calculator">Калькулятор</span>
+    </a>
+    <a class="nav-item" href="contacts.html">
+      <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37 2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.7a16 16 0 0 0 5.39 5.39l.98-.98a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21 15.93l.01 1z"/></svg></span>
+      <span class="nav-label" data-i18n="contacts">Контакты</span>
+    </a>
+  </nav>
+
+</div>
+
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+<script>
+if (window.Telegram?.WebApp) Telegram.WebApp.ready();
+
+function renderFavorites() {
+  const products = Favs.products();
+  const grid = document.getElementById('fav-grid');
+  const empty = document.getElementById('fav-empty');
+  document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.getAttribute('data-i18n')));
+
+  if (!products || products.length === 0) {
+    grid.innerHTML = '';
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    grid.innerHTML = products.map(p => buildProductCard(p, thickState[p.id])).join('');
+  }
+  Cart.updateBadge();
+  initFloatCart();
+}
+
+function onLangChange() { renderFavorites(); }
+
+async function init() {
+  initLangButtons();
+  await loadProducts();
+  renderFavorites();
+}
+
+init();
+</script>
+</body>
+</html>
