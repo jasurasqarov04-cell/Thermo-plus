@@ -1,23 +1,24 @@
 /**
- * BASALT SHIELD — hero animation for Thermo Plus
+ * THERMO PLUS — FIRE TEST hero animation.
  *
- * Tells the brand story visually:
- *   – Bottom of canvas:  raging fire (the threat)
- *   – Middle of canvas:  thick basalt-wool barrier (the product)
- *   – Top of canvas:     clean, cool, protected air (the promise)
+ * Live demonstration of the brand promise:
+ *   1. A real gas torch (PNG) is on the left.
+ *   2. A real basalt-wool slab (PNG) is on the right.
+ *   3. Between them, this script draws an animated blue propane flame jet
+ *      that originates at the torch nozzle and impacts the slab edge.
+ *   4. The slab glows orange where the flame hits, sparks bounce back…
+ *      but the slab itself never catches fire.
  *
- * Flames lick upward but cannot pass the wool — embers that try to rise
- * are absorbed by the fibers and dissipate into small puffs.
+ * Anchors are taken from invisible <span data-flame-source/> and
+ * <span data-flame-target/> markers placed inside the torch and slab
+ * containers, so layout changes don't break the alignment.
  *
- * Implementation highlights:
- *   • Wool layer is pre-rendered ONCE to an offscreen canvas
- *     (hundreds of short curved fibers in tan/amber tones — real basalt-wool look)
- *   • Flames are drawn as 4-stack teardrop bezier shapes
- *     (deep red → orange → yellow → white-hot core, additive blending)
- *   • Embers physically rise; on entering the wool zone, life decays fast,
- *     velocity is damped, and small puffs spawn — visual "absorption"
- *   • DPR-aware, delta-time loop, IntersectionObserver + Visibility API,
- *     ResizeObserver, prefers-reduced-motion (single static frame)
+ * Implementation notes:
+ *   • DPR-aware HiDPI canvas
+ *   • delta-time game loop via requestAnimationFrame
+ *   • IntersectionObserver + Page Visibility API for pause off-screen
+ *   • ResizeObserver to keep anchors aligned
+ *   • prefers-reduced-motion → single static frame
  */
 (function () {
   'use strict';
@@ -27,307 +28,232 @@
   function init() {
     const canvas = document.getElementById('basaltCanvas');
     if (!canvas) return;
-    const host = canvas.parentElement;
-    const interactHost = canvas.closest('.hero') || host;
+    const scene = canvas.closest('.shield-scene') || canvas.parentElement;
+    const srcEl = scene.querySelector('[data-flame-source]');
+    const tgtEl = scene.querySelector('[data-flame-target]');
+    if (!srcEl || !tgtEl) return;
+
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     let DPR = Math.min(window.devicePixelRatio || 1, 2);
     let W = 0, H = 0;
-    let running = true, onScreen = true;
     let last = performance.now();
     const t0 = last;
+    let onScreen = true;
 
-    // Offscreen wool texture
-    const wool = document.createElement('canvas');
-    const wctx = wool.getContext('2d');
+    const src = { x: 0, y: 0 };
+    const tgt = { x: 0, y: 0 };
+    const sparks = [];
+    const smoke = [];
 
-    // Vertical layout (fractions of H)
-    const layout = { coolEnd: 0, woolTop: 0, woolBottom: 0, fireTop: 0 };
+    function updateAnchors() {
+      const cRect = canvas.getBoundingClientRect();
+      const sR = srcEl.getBoundingClientRect();
+      const tR = tgtEl.getBoundingClientRect();
+      src.x = (sR.left + sR.width  / 2) - cRect.left;
+      src.y = (sR.top  + sR.height / 2) - cRect.top;
+      tgt.x = (tR.left + tR.width  / 2) - cRect.left;
+      tgt.y = (tR.top  + tR.height / 2) - cRect.top;
+    }
 
-    let flames = [];
-    let embers = [];
-    let puffs = [];
-    const pointer = { x: -1, y: -1, intensity: 0 };
-
-    const rand = (a, b) => a + Math.random() * (b - a);
-
-    // ─── RESIZE / LAYOUT ────────────────────────────────────────────
     function resize() {
-      const rect = host.getBoundingClientRect();
+      const rect = canvas.getBoundingClientRect();
       W = Math.max(1, Math.round(rect.width));
       H = Math.max(1, Math.round(rect.height));
       DPR = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = W * DPR;
+      canvas.width  = W * DPR;
       canvas.height = H * DPR;
-      canvas.style.width = W + 'px';
+      canvas.style.width  = W + 'px';
       canvas.style.height = H + 'px';
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
-      layout.coolEnd    = H * 0.34;
-      layout.woolTop    = H * 0.34;
-      layout.woolBottom = H * 0.60;
-      layout.fireTop    = H * 0.60;
-
-      renderWoolTexture();
-      makeFlames();
-      makeEmbers();
-      puffs = [];
+      updateAnchors();
     }
 
-    // ─── WOOL TEXTURE (pre-rendered once per resize) ────────────────
-    function renderWoolTexture() {
-      const w = W;
-      const h = Math.max(40, layout.woolBottom - layout.woolTop);
-      wool.width  = Math.round(w * DPR);
-      wool.height = Math.round(h * DPR);
-      wctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      wctx.clearRect(0, 0, w, h);
+    // ─── FLAME BODY ─────────────────────────────────────────────────
+    // Drawn as 4 stacked shapes (outer→core) along the source→target axis.
+    // We rotate the coordinate system so the flame travels along +X.
+    function drawFlame(time) {
+      const dx = tgt.x - src.x;
+      const dy = tgt.y - src.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 1) return;
+      const ang = Math.atan2(dy, dx);
 
-      // Base band — warm amber/tan gradient (real basalt-wool color)
-      const base = wctx.createLinearGradient(0, 0, 0, h);
-      base.addColorStop(0.00, '#704321');
-      base.addColorStop(0.40, '#A07037');
-      base.addColorStop(0.70, '#7A5022');
-      base.addColorStop(1.00, '#4D2E11');
-      wctx.fillStyle = base;
-      wctx.fillRect(0, 0, w, h);
-
-      // Tangled fibers — hundreds of short bezier strokes
-      const fiberCount = Math.round(w * h / 26);
-      wctx.lineCap = 'round';
-      for (let i = 0; i < fiberCount; i++) {
-        const x0 = Math.random() * w;
-        const y0 = Math.random() * h;
-        const len = 5 + Math.random() * 28;
-        const ang = (Math.random() - 0.5) * 2.0; // mostly horizontal-ish
-        const x1 = x0 + Math.cos(ang) * len;
-        const y1 = y0 + Math.sin(ang) * len;
-        const mx = (x0 + x1) / 2 + (Math.random() - 0.5) * 9;
-        const my = (y0 + y1) / 2 + (Math.random() - 0.5) * 9;
-        const shade = 0.30 + Math.random() * 0.55;
-        const r = Math.random();
-        if (r > 0.78) {
-          wctx.strokeStyle = `rgba(240, 200, 130, ${shade})`;       // highlight
-        } else if (r > 0.45) {
-          wctx.strokeStyle = `rgba(170, 110, 50, ${shade * 0.9})`;  // mid tan
-        } else {
-          wctx.strokeStyle = `rgba(50, 26, 10, ${shade * 0.85})`;   // shadow
-        }
-        wctx.lineWidth = 0.5 + Math.random() * 1.6;
-        wctx.beginPath();
-        wctx.moveTo(x0, y0);
-        wctx.quadraticCurveTo(mx, my, x1, y1);
-        wctx.stroke();
+      // Build flame contour points along the flame axis
+      const steps = 28;
+      const pts = new Array(steps + 1);
+      for (let i = 0; i <= steps; i++) {
+        const u = i / steps;
+        const x = u * dist;
+        // Width profile: thin at nozzle, fat in middle, flares at impact
+        //   base 4 → up to 18 in middle, +6 flare at u=1
+        const profile = 4 + Math.sin(u * Math.PI) * 14 + Math.pow(u, 4) * 6;
+        // High-frequency flicker along length + low-freq breathing
+        const flick = Math.sin(time * 0.012 + u * 8) * 1.4
+                    + Math.sin(time * 0.007 + u * 3.2) * 1.1;
+        // Slight vertical drift (only away from endpoints)
+        const driftMask = Math.sin(u * Math.PI); // 0 at ends, 1 in middle
+        const drift = Math.sin(time * 0.006 + u * 4) * 1.6 * driftMask;
+        pts[i] = { x, w: profile + flick, y: drift };
       }
 
-      // A few longer "stray" fibers poking out the top — gives that
-      // fuzzy mineral-wool surface
-      for (let i = 0; i < Math.round(w / 14); i++) {
-        const x = Math.random() * w;
-        const baseY = 6 + Math.random() * 4;
-        const len = 10 + Math.random() * 18;
-        const ang = -Math.PI / 2 + (Math.random() - 0.5) * 1.6;
-        const x1 = x + Math.cos(ang) * len;
-        const y1 = baseY + Math.sin(ang) * len;
-        wctx.strokeStyle = Math.random() > 0.5
-          ? `rgba(220, 175, 110, ${0.55 + Math.random() * 0.35})`
-          : `rgba(80, 48, 20, ${0.45 + Math.random() * 0.35})`;
-        wctx.lineWidth = 0.6 + Math.random() * 1.1;
-        wctx.beginPath();
-        wctx.moveTo(x, baseY);
-        wctx.quadraticCurveTo(x + (Math.random() - 0.5) * 6, (baseY + y1) / 2, x1, y1);
-        wctx.stroke();
-      }
+      ctx.save();
+      ctx.translate(src.x, src.y);
+      ctx.rotate(ang);
+      ctx.globalCompositeOperation = 'lighter';
 
-      // Feathered alpha on edges so wool blends with cool air (top) and
-      // bleeds slightly into the hot rim (bottom)
-      wctx.globalCompositeOperation = 'destination-out';
-      const gTop = wctx.createLinearGradient(0, 0, 0, 22);
-      gTop.addColorStop(0, 'rgba(0,0,0,0.80)');
-      gTop.addColorStop(1, 'rgba(0,0,0,0)');
-      wctx.fillStyle = gTop;
-      wctx.fillRect(0, 0, w, 22);
+      // Outer halo — soft cyan/blue glow
+      ctx.shadowColor = 'rgba(80, 160, 255, 0.55)';
+      ctx.shadowBlur = 16;
+      drawContour(pts, 1.30, 'rgba(100, 170, 255, 0.40)');
+      ctx.shadowBlur = 0;
 
-      const gBot = wctx.createLinearGradient(0, h - 16, 0, h);
-      gBot.addColorStop(0, 'rgba(0,0,0,0)');
-      gBot.addColorStop(1, 'rgba(0,0,0,0.55)');
-      wctx.fillStyle = gBot;
-      wctx.fillRect(0, h - 16, w, 16);
-      wctx.globalCompositeOperation = 'source-over';
+      // Outer flame — pale blue
+      drawContour(pts, 1.00, 'rgba(140, 195, 255, 0.65)');
+      // Mid flame — deeper blue
+      drawContour(pts, 0.72, 'rgba(70, 135, 255, 0.85)');
+      // Inner cone — bright cyan/white
+      drawContour(pts, 0.45, 'rgba(210, 240, 255, 0.95)');
+      // White-hot core — narrow
+      drawContour(pts, 0.22, 'rgba(255, 255, 255, 1.0)');
+
+      // Tip flare — slight yellow/orange at impact (incomplete combustion zone)
+      ctx.fillStyle = 'rgba(255, 200, 110, 0.45)';
+      const tipR = 14 + Math.sin(time * 0.011) * 2;
+      const gTip = ctx.createRadialGradient(dist, 0, 0, dist, 0, tipR);
+      gTip.addColorStop(0, 'rgba(255, 230, 160, 0.85)');
+      gTip.addColorStop(1, 'rgba(255, 130, 50, 0)');
+      ctx.fillStyle = gTip;
+      ctx.beginPath();
+      ctx.arc(dist, 0, tipR, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
     }
 
-    // ─── FLAMES ─────────────────────────────────────────────────────
-    function makeFlames() {
-      flames = [];
-      const count = Math.max(7, Math.round(W / 78));
-      for (let i = 0; i < count; i++) {
-        flames.push({
-          x: (i + 0.5) * (W / count) + rand(-12, 12),
-          baseW: rand(28, 56),
-          height: rand(0.55, 0.95),     // fraction of fire region height
-          phase: rand(0, Math.PI * 2),
-          speed: rand(0.0009, 0.0017),
-          twist: rand(0.30, 0.85),
-          flickerSeed: rand(0, 10)
-        });
-      }
-    }
-
-    function drawTeardrop(baseX, baseY, halfB, apexX, apexY, color) {
+    function drawContour(pts, scale, color) {
       ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.moveTo(baseX - halfB, baseY);
-      ctx.bezierCurveTo(
-        baseX - halfB * 1.4, baseY - (baseY - apexY) * 0.35,
-        apexX - halfB * 0.55, apexY + (baseY - apexY) * 0.25,
-        apexX, apexY
-      );
-      ctx.bezierCurveTo(
-        apexX + halfB * 0.55, apexY + (baseY - apexY) * 0.25,
-        baseX + halfB * 1.4, baseY - (baseY - apexY) * 0.35,
-        baseX + halfB, baseY
-      );
+      ctx.moveTo(pts[0].x, pts[0].y - pts[0].w * scale);
+      for (let i = 1; i < pts.length; i++) {
+        ctx.lineTo(pts[i].x, pts[i].y - pts[i].w * scale);
+      }
+      for (let i = pts.length - 1; i >= 0; i--) {
+        ctx.lineTo(pts[i].x, pts[i].y + pts[i].w * scale);
+      }
       ctx.closePath();
       ctx.fill();
     }
 
-    function drawFlames(time) {
-      // Base orange glow filling the fire region
-      const fireTop = layout.fireTop;
-      const fireH = H - fireTop;
-      const g = ctx.createLinearGradient(0, fireTop, 0, H);
-      g.addColorStop(0.00, 'rgba(199, 18, 25, 0.06)');
-      g.addColorStop(0.40, 'rgba(255, 80, 30, 0.28)');
-      g.addColorStop(1.00, 'rgba(255, 130, 60, 0.65)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, fireTop, W, fireH);
-
+    // ─── IMPACT GLOW ────────────────────────────────────────────────
+    // Hot spot on the slab where the flame hits — pulsing orange halo
+    function drawImpact(time) {
+      const pulse = 0.85 + 0.15 * Math.sin(time * 0.008);
+      const r = 60 * pulse;
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
 
-      const baseY = H + 2;
-      flames.forEach(f => {
-        const tt = time * f.speed + f.phase;
-        const flicker = (0.82 + 0.18 * Math.sin(tt * 3.2 + f.flickerSeed))
-                      * (0.92 + 0.08 * Math.sin(tt * 7.7));
-        const flameH = fireH * f.height * flicker;
-        const top = baseY - flameH;
-        const halfB = f.baseW / 2;
-        const apexX = f.x + Math.sin(tt * 1.4) * 14 * f.twist;
+      // Outer warm halo
+      const halo = ctx.createRadialGradient(tgt.x, tgt.y, 0, tgt.x, tgt.y, r);
+      halo.addColorStop(0.00, 'rgba(255, 180, 80, 0.55)');
+      halo.addColorStop(0.45, 'rgba(255, 90, 40, 0.30)');
+      halo.addColorStop(1.00, 'rgba(255, 60, 20, 0)');
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(tgt.x, tgt.y, r, 0, Math.PI * 2);
+      ctx.fill();
 
-        drawTeardrop(f.x, baseY, halfB * 1.10, apexX, top - 6,
-          'rgba(199, 18, 25, 0.55)');
-        drawTeardrop(f.x, baseY, halfB * 0.78, apexX, top + flameH * 0.10,
-          'rgba(255, 100, 40, 0.80)');
-        drawTeardrop(f.x, baseY, halfB * 0.52, apexX, top + flameH * 0.28,
-          'rgba(255, 195, 90, 0.95)');
-        drawTeardrop(f.x, baseY, halfB * 0.26, apexX, top + flameH * 0.45,
-          'rgba(255, 240, 200, 1.0)');
-      });
-
+      // Bright orange core
+      const coreR = 22 * pulse;
+      const core = ctx.createRadialGradient(tgt.x, tgt.y, 0, tgt.x, tgt.y, coreR);
+      core.addColorStop(0, 'rgba(255, 240, 200, 0.95)');
+      core.addColorStop(1, 'rgba(255, 130, 50, 0)');
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(tgt.x, tgt.y, coreR, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
     }
 
-    // ─── EMBERS ─────────────────────────────────────────────────────
-    function makeEmbers() {
-      embers = [];
-      const target = Math.max(22, Math.min(48, Math.round(W / 22)));
-      for (let i = 0; i < target; i++) embers.push(spawnEmber(true));
-    }
-
-    function spawnEmber(initial) {
-      return {
-        x: rand(0, W),
-        y: initial ? rand(layout.fireTop + 20, H - 6) : H + rand(0, 30),
-        vy: -rand(20, 56) / 1000,
-        vx: rand(-18, 18) / 1000,
-        size: rand(0.7, 2.4),
+    // ─── SPARKS (bouncing back from the slab — wool deflects fire) ──
+    function spawnSpark() {
+      // Sparks originate near the impact point, bounce back to the left
+      const dx = src.x - tgt.x;
+      const dy = src.y - tgt.y;
+      const ang = Math.atan2(dy, dx) + (Math.random() - 0.5) * 1.4;
+      const speed = 0.10 + Math.random() * 0.18;
+      sparks.push({
+        x: tgt.x + (Math.random() - 0.5) * 8,
+        y: tgt.y + (Math.random() - 0.5) * 8,
+        vx: Math.cos(ang) * speed,
+        vy: Math.sin(ang) * speed,
         life: 1,
-        twinkle: rand(0, Math.PI * 2)
-      };
-    }
-
-    function spawnPuff(x, y) {
-      puffs.push({
-        x, y,
-        r: 1,
-        life: 1,
-        decay: rand(0.0018, 0.0028),
-        grow: rand(0.05, 0.09)
+        size: 0.6 + Math.random() * 1.7,
+        decay: 0.0012 + Math.random() * 0.0010,
+        twinkle: Math.random() * Math.PI * 2
       });
     }
 
-    function drawEmbers(dt, time) {
+    function drawSparks(dt) {
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const s = sparks[i];
+        s.x += s.vx * dt;
+        s.y += s.vy * dt;
+        // mild gravity
+        s.vy += 0.00010 * dt;
+        s.life -= s.decay * dt;
+        s.twinkle += dt * 0.005;
+        if (s.life <= 0 || s.x < -20 || s.y > H + 30) { sparks.splice(i, 1); continue; }
+        const a = s.life * (0.6 + 0.4 * Math.sin(s.twinkle));
 
-      for (let i = 0; i < embers.length; i++) {
-        const e = embers[i];
-        e.x += e.vx * dt;
-        e.y += e.vy * dt;
-        e.twinkle += dt * 0.004;
-
-        // Distance below wool bottom edge (positive when ember is still below)
-        const distToBarrier = e.y - layout.woolBottom;
-        let absorbing = false;
-
-        if (distToBarrier < 14) {
-          // Approaching/inside wool — accelerated decay + horizontal damping
-          // (visually: the ember is being trapped by the fibers)
-          const closeness = Math.max(0, 1 - distToBarrier / 14);
-          e.life -= (0.0008 + 0.005 * closeness) * dt;
-          e.vx *= 0.96;
-          e.vy *= 0.985;
-          absorbing = true;
-
-          // Random small puff at the moment of absorption
-          if (distToBarrier < 4 && Math.random() < 0.07) {
-            spawnPuff(e.x, layout.woolBottom + rand(-2, 2));
-          }
-        } else {
-          e.life -= 0.00045 * dt;
-        }
-
-        // Recycle if dead or out of bounds (above wool top = absorbed)
-        if (e.life <= 0 || e.y < layout.woolTop + 4 || e.x < -6 || e.x > W + 6) {
-          embers[i] = spawnEmber(false);
-          continue;
-        }
-
-        const alpha = Math.max(0, e.life) * (0.55 + 0.45 * Math.sin(e.twinkle));
-        const r = e.size * (absorbing ? 0.85 : 1);
-
-        const rg = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, r * 7);
-        rg.addColorStop(0.00, `rgba(255, 230, 170, ${alpha})`);
-        rg.addColorStop(0.35, `rgba(255, 110, 45, ${alpha * 0.55})`);
-        rg.addColorStop(1.00, `rgba(199, 18, 25, 0)`);
+        const rg = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size * 6);
+        rg.addColorStop(0,    `rgba(255, 220, 150, ${a})`);
+        rg.addColorStop(0.45, `rgba(255, 110, 45, ${a * 0.55})`);
+        rg.addColorStop(1,    'rgba(255, 60, 20, 0)');
         ctx.fillStyle = rg;
         ctx.beginPath();
-        ctx.arc(e.x, e.y, r * 7, 0, Math.PI * 2);
+        ctx.arc(s.x, s.y, s.size * 6, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = `rgba(255, 245, 215, ${alpha})`;
+        ctx.fillStyle = `rgba(255, 245, 215, ${a})`;
         ctx.beginPath();
-        ctx.arc(e.x, e.y, r, 0, Math.PI * 2);
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.restore();
     }
 
-    function drawPuffs(dt) {
+    // ─── SMOKE WISPS rising from the impact point ──────────────────
+    function spawnSmoke() {
+      smoke.push({
+        x: tgt.x + (Math.random() - 0.5) * 6,
+        y: tgt.y,
+        vx: -0.005 - Math.random() * 0.010,
+        vy: -0.020 - Math.random() * 0.025,
+        r: 4 + Math.random() * 4,
+        grow: 0.012 + Math.random() * 0.014,
+        life: 1,
+        decay: 0.00055 + Math.random() * 0.00040
+      });
+    }
+    function drawSmoke(dt) {
       ctx.save();
-      ctx.globalCompositeOperation = 'lighter';
-      for (let i = puffs.length - 1; i >= 0; i--) {
-        const p = puffs[i];
+      ctx.globalCompositeOperation = 'screen';
+      for (let i = smoke.length - 1; i >= 0; i--) {
+        const p = smoke[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
         p.r += p.grow * dt;
         p.life -= p.decay * dt;
-        if (p.life <= 0) { puffs.splice(i, 1); continue; }
-        const a = Math.max(0, p.life);
-        const rg = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
-        rg.addColorStop(0.0, `rgba(255, 210, 140, ${a * 0.55})`);
-        rg.addColorStop(1.0, `rgba(255, 100, 40, 0)`);
-        ctx.fillStyle = rg;
+        if (p.life <= 0) { smoke.splice(i, 1); continue; }
+        const a = Math.max(0, p.life) * 0.35;
+        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+        g.addColorStop(0, `rgba(200, 200, 210, ${a})`);
+        g.addColorStop(1, 'rgba(180, 180, 195, 0)');
+        ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fill();
@@ -335,85 +261,49 @@
       ctx.restore();
     }
 
-    // ─── COOL SAFE ZONE (top) ───────────────────────────────────────
-    function drawCool() {
-      const g = ctx.createLinearGradient(0, 0, 0, layout.coolEnd);
-      g.addColorStop(0.00, 'rgba(150, 195, 225, 0.20)');
-      g.addColorStop(0.70, 'rgba(150, 195, 225, 0.05)');
-      g.addColorStop(1.00, 'rgba(150, 195, 225, 0.00)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, layout.coolEnd);
-    }
-
-    // ─── WOOL LAYER (the shield) ────────────────────────────────────
-    function drawWool(time) {
-      // Hot rim immediately below wool — fire pressing against the barrier
-      const rimY = layout.woolBottom - 4;
-      const rimH = 36;
-      const rim = ctx.createLinearGradient(0, rimY, 0, rimY + rimH);
-      rim.addColorStop(0, 'rgba(255, 110, 45, 0.50)');
-      rim.addColorStop(1, 'rgba(255, 110, 45, 0)');
-      ctx.save();
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.fillStyle = rim;
-      ctx.fillRect(0, rimY, W, rimH);
-
-      // Subtle horizontal "heat wave" pulse on the rim
-      const pulse = 0.5 + 0.5 * Math.sin(time * 0.0028);
-      ctx.fillStyle = `rgba(255, 80, 30, ${0.18 * pulse})`;
-      ctx.fillRect(0, rimY + 2, W, 4);
-      ctx.restore();
-
-      // The wool texture itself (fully opaque except feathered edges)
-      ctx.drawImage(wool, 0, layout.woolTop, W, layout.woolBottom - layout.woolTop);
-
-      // Subtle warm tint on the wool's bottom 1/3 (heating up but not burning)
-      const heat = ctx.createLinearGradient(0, layout.woolTop + (layout.woolBottom - layout.woolTop) * 0.6, 0, layout.woolBottom);
-      heat.addColorStop(0, 'rgba(255, 90, 35, 0)');
-      heat.addColorStop(1, 'rgba(255, 90, 35, 0.18)');
-      ctx.save();
-      ctx.globalCompositeOperation = 'overlay';
-      ctx.fillStyle = heat;
-      ctx.fillRect(0, layout.woolTop, W, layout.woolBottom - layout.woolTop);
-      ctx.restore();
-    }
-
-    // ─── MAIN FRAME ─────────────────────────────────────────────────
+    // ─── FRAME LOOP ─────────────────────────────────────────────────
+    let sparkClock = 0;
+    let smokeClock = 0;
     function frame(now) {
-      if (!running) return;
       const dt = Math.min(50, now - last);
       last = now;
       const time = now - t0;
 
       if (onScreen && document.visibilityState !== 'hidden') {
         ctx.clearRect(0, 0, W, H);
-        drawCool();
-        drawFlames(time);
-        drawEmbers(dt, time);
-        drawPuffs(dt);
-        drawWool(time);
-        pointer.intensity *= 0.95;
+
+        // Glow from torch nozzle (subtle blue halo at source)
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const srcGlow = ctx.createRadialGradient(src.x, src.y, 0, src.x, src.y, 26);
+        srcGlow.addColorStop(0, 'rgba(120, 190, 255, 0.55)');
+        srcGlow.addColorStop(1, 'rgba(80, 140, 255, 0)');
+        ctx.fillStyle = srcGlow;
+        ctx.beginPath();
+        ctx.arc(src.x, src.y, 26, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        drawFlame(time);
+        drawImpact(time);
+        drawSmoke(dt);
+        drawSparks(dt);
+
+        // Spawn sparks at ~120 ms intervals
+        sparkClock += dt;
+        if (sparkClock > 90 + Math.random() * 90) {
+          for (let i = 0; i < 1 + Math.floor(Math.random() * 2); i++) spawnSpark();
+          sparkClock = 0;
+        }
+        // Spawn smoke puffs at ~280 ms intervals
+        smokeClock += dt;
+        if (smokeClock > 260 + Math.random() * 220) {
+          spawnSmoke();
+          smokeClock = 0;
+        }
       }
       requestAnimationFrame(frame);
     }
-
-    // ─── INTERACTION ────────────────────────────────────────────────
-    // Move pointer near the wool → fan the flames (slight burst)
-    function onPointer(e) {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      pointer.x = x; pointer.y = y;
-      pointer.intensity = Math.min(1, pointer.intensity + 0.4);
-
-      // Pointer near the wool boundary spawns a small puff (interactive feedback)
-      if (Math.abs(y - layout.woolBottom) < 22 && Math.random() < 0.25) {
-        spawnPuff(x, layout.woolBottom + rand(-3, 3));
-      }
-    }
-    function onLeave() { pointer.x = pointer.y = -1; }
-    interactHost.addEventListener('pointermove', onPointer, { passive: true });
-    interactHost.addEventListener('pointerleave', onLeave, { passive: true });
 
     // ─── OBSERVERS ──────────────────────────────────────────────────
     if ('IntersectionObserver' in window) {
@@ -422,21 +312,26 @@
       }, { threshold: 0 }).observe(canvas);
     }
     if ('ResizeObserver' in window) {
-      new ResizeObserver(() => resize()).observe(host);
+      new ResizeObserver(() => resize()).observe(scene);
     } else {
       window.addEventListener('resize', resize);
     }
+    window.addEventListener('load', resize);
     document.addEventListener('visibilitychange', () => {
       last = performance.now();
+    });
+
+    // Re-anchor once images finish loading (their layout will shift)
+    scene.querySelectorAll('img').forEach(img => {
+      if (!img.complete) img.addEventListener('load', updateAnchors, { once: true });
     });
 
     // ─── BOOT ───────────────────────────────────────────────────────
     resize();
     if (reduced) {
       ctx.clearRect(0, 0, W, H);
-      drawCool();
-      drawFlames(0);
-      drawWool(0);
+      drawFlame(0);
+      drawImpact(0);
     } else {
       requestAnimationFrame(frame);
     }
