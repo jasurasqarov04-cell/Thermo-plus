@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// THERMO PLUS — Calculator v3 — Guided Step Flow
+// THERMO PLUS — Calculator v4 — Guided Step Flow
 // ═══════════════════════════════════════════════════════════════
 
 let calcState = {
@@ -49,25 +49,25 @@ const REGIONS = {
 
 const SURFACES = {
   ru: [
-    { id:'facade', icon:'🏢', label:'Фасад', sub:'Внешние стены здания' },
-    { id:'roof',   icon:'🏠', label:'Кровля', sub:'Скатная или плоская крыша' },
-    { id:'floor',  icon:'⬜', label:'Пол',    sub:'Межэтажные перекрытия' },
-    { id:'wall',   icon:'🧱', label:'Перегородки', sub:'Внутренние стены' },
-    { id:'tech',   icon:'🏭', label:'Технический', sub:'Трубы, оборудование' },
+    { id:'facade', icon:'facade', label:'Фасад', sub:'Внешние стены здания' },
+    { id:'roof',   icon:'roof',   label:'Кровля', sub:'Скатная или плоская крыша' },
+    { id:'floor',  icon:'floor',  label:'Пол',    sub:'Межэтажные перекрытия' },
+    { id:'wall',   icon:'wall',   label:'Перегородки', sub:'Внутренние стены' },
+    { id:'tech',   icon:'tech',   label:'Технический', sub:'Трубы, оборудование' },
   ],
   uz: [
-    { id:'facade', icon:'🏢', label:'Fasad', sub:'Binoning tashqi devori' },
-    { id:'roof',   icon:'🏠', label:'Tom', sub:'Qiyalik yoki tekis tom' },
-    { id:'floor',  icon:'⬜', label:'Pol', sub:"Qavat oralig'i" },
-    { id:'wall',   icon:'🧱', label:"Bo'lim", sub:'Ichki devorlar' },
-    { id:'tech',   icon:'🏭', label:'Texnik', sub:'Trubalar, uskunalar' },
+    { id:'facade', icon:'facade', label:'Fasad', sub:'Binoning tashqi devori' },
+    { id:'roof',   icon:'roof',   label:'Tom', sub:'Qiyalik yoki tekis tom' },
+    { id:'floor',  icon:'floor',  label:'Pol', sub:"Qavat oralig'i" },
+    { id:'wall',   icon:'wall',   label:"Bo'lim", sub:'Ichki devorlar' },
+    { id:'tech',   icon:'tech',   label:'Texnik', sub:'Trubalar, uskunalar' },
   ],
   en: [
-    { id:'facade', icon:'🏢', label:'Facade', sub:'External building walls' },
-    { id:'roof',   icon:'🏠', label:'Roof', sub:'Pitched or flat roof' },
-    { id:'floor',  icon:'⬜', label:'Floor', sub:'Floor slabs' },
-    { id:'wall',   icon:'🧱', label:'Partition', sub:'Internal walls' },
-    { id:'tech',   icon:'🏭', label:'Technical', sub:'Pipes, equipment' },
+    { id:'facade', icon:'facade', label:'Facade', sub:'External building walls' },
+    { id:'roof',   icon:'roof',   label:'Roof', sub:'Pitched or flat roof' },
+    { id:'floor',  icon:'floor',  label:'Floor', sub:'Floor slabs' },
+    { id:'wall',   icon:'wall',   label:'Partition', sub:'Internal walls' },
+    { id:'tech',   icon:'tech',   label:'Technical', sub:'Pipes, equipment' },
   ]
 };
 
@@ -81,7 +81,7 @@ const CONSTRUCTIONS = {
     { id:'other',    label:'Другое' },
   ],
   uz: [
-    { id:'brick',    label:'G\'isht' },
+    { id:'brick',    label:"G'isht" },
     { id:'gas',      label:'Gaz blok' },
     { id:'concrete', label:'Beton' },
     { id:'frame',    label:'Karkas' },
@@ -100,19 +100,19 @@ const CONSTRUCTIONS = {
 
 const GOALS = {
   ru: [
-    { id:'economy',  label:'Экономный', sub:'Минимальные требования', thick_add: 0 },
-    { id:'optimal',  label:'Оптимальный', sub:'Рекомендуемый уровень', thick_add: 1 },
-    { id:'maximum',  label:'Максимальный', sub:'Максимальная защита', thick_add: 2 },
+    { id:'economy',  icon:'package', label:'Экономный', sub:'Минимальные требования' },
+    { id:'optimal',  icon:'shield',  label:'Оптимальный', sub:'Рекомендуемый уровень' },
+    { id:'maximum',  icon:'spark',   label:'Максимальный', sub:'Максимальная защита' },
   ],
   uz: [
-    { id:'economy',  label:'Tejamkor', sub:'Minimal talablar', thick_add: 0 },
-    { id:'optimal',  label:'Optimal', sub:'Tavsiya etiladigan daraja', thick_add: 1 },
-    { id:'maximum',  label:'Maksimal', sub:'Maksimal himoya', thick_add: 2 },
+    { id:'economy',  icon:'package', label:'Tejamkor', sub:'Minimal talablar' },
+    { id:'optimal',  icon:'shield',  label:'Optimal', sub:'Tavsiya etiladigan' },
+    { id:'maximum',  icon:'spark',   label:'Maksimal', sub:'Maksimal himoya' },
   ],
   en: [
-    { id:'economy',  label:'Economy', sub:'Minimum requirements', thick_add: 0 },
-    { id:'optimal',  label:'Optimal', sub:'Recommended level', thick_add: 1 },
-    { id:'maximum',  label:'Maximum', sub:'Maximum protection', thick_add: 2 },
+    { id:'economy',  icon:'package', label:'Economy', sub:'Minimum requirements' },
+    { id:'optimal',  icon:'shield',  label:'Optimal', sub:'Recommended level' },
+    { id:'maximum',  icon:'spark',   label:'Maximum', sub:'Maximum protection' },
   ]
 };
 
@@ -130,18 +130,15 @@ const ZONE_BY_REGION = {
   namangan: 3, fergana: 3, nukus: 4, termez: 2, other: 3
 };
 
-// Recommended product by surface
 const PRODUCT_BY_SURFACE = {
-  facade: [1, 3, 4],  // product ids
+  facade: [1, 3, 4],
   roof:   [5, 6, 7],
   floor:  [1, 2],
   wall:   [1, 2],
   tech:   [7, 8],
 };
 
-function getZone(regionId) {
-  return ZONE_BY_REGION[regionId] || 3;
-}
+function getZone(regionId) { return ZONE_BY_REGION[regionId] || 3; }
 
 function calcThickness(surface, zone, goalId, lambda = 0.036) {
   const rRequired = (R_REQUIRED[surface] || R_REQUIRED.facade)[zone] || 2.8;
@@ -151,23 +148,25 @@ function calcThickness(surface, zone, goalId, lambda = 0.036) {
   return Math.max(50, Math.min(200, thicknessMm));
 }
 
+function ico(name) {
+  return (typeof ic === 'function') ? ic(name) : '';
+}
+
 // ─── RENDER ENGINE ────────────────────────────────────────────────
 function renderCalcStep() {
   const lang = getCurrentLang();
   const step = calcState.step;
 
-  // Update progress bar
   const bar = document.getElementById('progress-bar');
   if (bar) bar.style.width = `${(step / TOTAL_STEPS) * 100}%`;
 
-  // Back button
   const backBtn = document.getElementById('back-btn');
   if (backBtn) {
-    backBtn.style.display = step > 1 ? 'flex' : 'none';
-    backBtn.querySelector('#back-label').textContent = t('back');
+    backBtn.style.display = step > 1 ? 'inline-flex' : 'none';
+    const lbl = backBtn.querySelector('#back-label');
+    if (lbl) lbl.textContent = t('back');
   }
 
-  // Page title
   const pageTitle = document.getElementById('page-title');
   if (pageTitle) pageTitle.textContent = t('calcTitle');
 
@@ -184,11 +183,13 @@ function renderCalcStep() {
     case 5: renderStep5(body, lang, stepLabel); break;
     case 6: renderResult(body, lang); break;
   }
+  if (typeof injectIcons === 'function') injectIcons();
+  if (window.TPAnim) window.TPAnim.refreshAll();
 }
 
 function stepHeader(stepLabel, titleKey, subKey) {
   return `
-    <div style="margin-bottom:20px">
+    <div style="margin-bottom:22px">
       <div class="calc-step-label">${stepLabel}</div>
       <div class="calc-step-title">${t(titleKey)}</div>
       <div class="calc-step-sub">${t(subKey)}</div>
@@ -201,6 +202,7 @@ function renderStep1(body, lang, stepLabel) {
   const grid = regions.map(r => `
     <div class="choice-card ${calcState.region === r.id ? 'selected' : ''}"
       onclick="selectRegion('${r.id}')">
+      <div class="choice-icon" data-icon="region"></div>
       <div class="choice-text">
         <div class="choice-title">${r.label}</div>
         <div class="choice-sub">${r.sub}</div>
@@ -216,6 +218,7 @@ function renderStep1(body, lang, stepLabel) {
 function selectRegion(id) {
   calcState.region = id;
   calcState.step = 2;
+  if (window.hap) window.hap('selection');
   renderCalcStep();
 }
 
@@ -225,7 +228,7 @@ function renderStep2(body, lang, stepLabel) {
   const cards = surfaces.map(s => `
     <div class="choice-card ${calcState.surface === s.id ? 'selected' : ''}"
       onclick="selectSurface('${s.id}')">
-      <div class="choice-icon">${s.icon}</div>
+      <div class="choice-icon" data-icon="${s.icon}"></div>
       <div class="choice-text">
         <div class="choice-title">${s.label}</div>
         <div class="choice-sub">${s.sub}</div>
@@ -241,15 +244,17 @@ function renderStep2(body, lang, stepLabel) {
 function selectSurface(id) {
   calcState.surface = id;
   calcState.step = 3;
+  if (window.hap) window.hap('selection');
   renderCalcStep();
 }
 
-// STEP 3 — Construction type
+// STEP 3 — Construction
 function renderStep3(body, lang, stepLabel) {
   const constructions = CONSTRUCTIONS[lang] || CONSTRUCTIONS.ru;
   const chips = constructions.map(c => `
     <div class="choice-card-sm ${calcState.construction === c.id ? 'selected' : ''}"
       onclick="selectConstruction('${c.id}')">
+      <div class="choice-icon" data-icon="wall"></div>
       <div class="choice-title">${c.label}</div>
     </div>`).join('');
 
@@ -261,10 +266,11 @@ function renderStep3(body, lang, stepLabel) {
 function selectConstruction(id) {
   calcState.construction = id;
   calcState.step = 4;
+  if (window.hap) window.hap('selection');
   renderCalcStep();
 }
 
-// STEP 4 — Area input
+// STEP 4 — Area
 function renderStep4(body, lang, stepLabel) {
   const areaLabel = lang === 'uz' ? 'Maydon (м²)' : lang === 'en' ? 'Area (m²)' : 'Площадь (м²)';
   const placeholder = lang === 'uz' ? 'Masalan: 120' : lang === 'en' ? 'e.g. 120' : 'Например: 120';
@@ -274,6 +280,12 @@ function renderStep4(body, lang, stepLabel) {
     : lang === 'en'
     ? 'Enter the approximate area of the surface to be insulated'
     : 'Введите приблизительную площадь поверхности для утепления';
+
+  // Quick area chips
+  const quick = [50, 100, 150, 200, 300];
+  const quickHtml = quick.map(v => `
+    <button class="thick-chip-s" type="button" onclick="setAreaQuick(${v})">${v} м²</button>
+  `).join('');
 
   body.innerHTML = `
     ${stepHeader(stepLabel, 'calcStep4', 'calcStep4sub')}
@@ -286,8 +298,11 @@ function renderStep4(body, lang, stepLabel) {
           oninput="calcState.area = parseFloat(this.value) || null"/>
         <span class="calc-unit">м²</span>
       </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:14px" id="quick-area">
+        ${quickHtml}
+      </div>
     </div>
-    <div style="font-size:12px;color:var(--text-2);line-height:1.6;margin-bottom:20px">${helpText}</div>
+    <div style="font-size:12.5px;color:var(--text-2);line-height:1.6;margin-bottom:22px">${helpText}</div>
     <button class="btn-red full" onclick="submitArea()">${nextLabel} →</button>`;
 
   setTimeout(() => {
@@ -296,15 +311,24 @@ function renderStep4(body, lang, stepLabel) {
   }, 100);
 }
 
+function setAreaQuick(v) {
+  calcState.area = v;
+  const inp = document.getElementById('area-input');
+  if (inp) inp.value = v;
+  if (window.hap) window.hap('selection');
+}
+
 function submitArea() {
   const inp = document.getElementById('area-input');
   const val = parseFloat(inp ? inp.value : calcState.area);
   if (!val || val <= 0) {
-    showToast('⚠️ ' + (getCurrentLang() === 'ru' ? 'Введите площадь' : 'Enter area'));
+    showToast(getCurrentLang() === 'ru' ? 'Введите площадь' : getCurrentLang() === 'uz' ? 'Maydonni kiriting' : 'Enter area', 'warning');
+    if (window.hap) window.hap('error');
     return;
   }
   calcState.area = val;
   calcState.step = 5;
+  if (window.hap) window.hap('selection');
   renderCalcStep();
 }
 
@@ -314,6 +338,7 @@ function renderStep5(body, lang, stepLabel) {
   const cards = goals.map(g => `
     <div class="choice-card ${calcState.goal === g.id ? 'selected' : ''}"
       onclick="selectGoal('${g.id}')">
+      <div class="choice-icon" data-icon="${g.icon}"></div>
       <div class="choice-text">
         <div class="choice-title">${g.label}</div>
         <div class="choice-sub">${g.sub}</div>
@@ -329,6 +354,7 @@ function renderStep5(body, lang, stepLabel) {
 function selectGoal(id) {
   calcState.goal = id;
   calcState.step = 6;
+  if (window.hap) window.hap('success');
   renderCalcStep();
 }
 
@@ -343,7 +369,6 @@ function renderResult(body, lang) {
   const area = calcState.area || 100;
   const recThick = calcThickness(surface, zone, goal);
 
-  // Find best product
   const preferredIds = PRODUCT_BY_SURFACE[surface] || [1];
   let recProduct = null;
   if (window.PRODUCTS_DATA) {
@@ -357,16 +382,12 @@ function renderResult(body, lang) {
     if (!recProduct) recProduct = PRODUCTS_DATA[0];
   }
 
-  // Qty calculation
   const packArea = recProduct ? getPackArea(recProduct, recThick) : 6.48;
   const packsNeeded = Math.ceil(area / packArea);
-  const totalArea = area * 1.05; // 5% waste
-  const volume = +(totalArea * recThick / 1000).toFixed(2);
-  const weight = recProduct ? +(volume * recProduct.density).toFixed(0) : 0;
+  const totalArea = area * 1.05;
   const price = recProduct ? getPrice(recProduct, recThick) : 0;
   const totalCost = Math.round(price * totalArea);
 
-  // Build summary chips
   const regions_flat = (REGIONS[lang] || REGIONS.ru);
   const regionLabel = regions_flat.find(r => r.id === calcState.region)?.label || '—';
   const surfaces_flat = (SURFACES[lang] || SURFACES.ru);
@@ -386,38 +407,43 @@ function renderResult(body, lang) {
       : lang === 'en'
       ? 'This is an approximate calculation. Contact our engineer for a detailed project.'
       : 'Это приблизительный расчёт. Для точного проекта обратитесь к нашему инженеру.',
-    viewProd: lang === 'uz' ? 'Mahsulotni ko\'rish' : lang === 'en' ? 'View product' : 'Смотреть продукт',
+    viewProd: lang === 'uz' ? "Mahsulotni ko'rish" : lang === 'en' ? 'View product' : 'Смотреть продукт',
     recalc: lang === 'uz' ? 'Qayta hisoblash' : lang === 'en' ? 'Recalculate' : 'Пересчитать',
-    contact: lang === 'uz' ? 'Menejer bilan bog\'lanish' : lang === 'en' ? 'Contact manager' : 'Связаться с менеджером',
+    contact: lang === 'uz' ? "Menejer bilan bog'lanish" : lang === 'en' ? 'Contact manager' : 'Связаться с менеджером',
     yourInput: lang === 'uz' ? 'Siz tanladingiz' : lang === 'en' ? 'Your selections' : 'Ваши параметры',
+    addToCart: lang === 'uz' ? "Savatga qo'shish" : lang === 'en' ? 'Add to cart' : 'Добавить в корзину',
   };
 
   body.innerHTML = `
-    <div style="margin-bottom:16px">
-      <div class="calc-step-label">${labels.resultTitle}</div>
+    <div style="margin-bottom:18px;display:flex;align-items:center;gap:10px">
+      <div style="width:42px;height:42px;border-radius:12px;background:var(--grad-fire);display:flex;align-items:center;justify-content:center;color:white;box-shadow:0 4px 12px rgba(199,18,25,.35)" data-icon="check"></div>
+      <div>
+        <div class="calc-step-label">${labels.resultTitle}</div>
+        <div style="font-family:var(--font-display);font-size:18px;font-weight:800;letter-spacing:-0.3px;color:var(--text)">${recProduct ? recProduct.name : '—'}</div>
+      </div>
     </div>
 
     <div class="result-card">
       <div class="result-grid">
         <div class="result-item">
           <div class="result-item-label">${labels.thickness}</div>
-          <div class="result-item-val red">${recThick}</div>
+          <div class="result-item-val red" data-count="${recThick}">${recThick}</div>
           <div class="result-item-unit">мм</div>
         </div>
         <div class="result-item">
           <div class="result-item-label">${labels.area}</div>
-          <div class="result-item-val">${area}</div>
+          <div class="result-item-val" data-count="${area}">${area}</div>
           <div class="result-item-unit">м²</div>
         </div>
         <div class="result-item">
           <div class="result-item-label">${labels.packs}</div>
-          <div class="result-item-val">${packsNeeded}</div>
+          <div class="result-item-val" data-count="${packsNeeded}">${packsNeeded}</div>
           <div class="result-item-unit">${lang === 'uz' ? 'paket' : lang === 'en' ? 'packs' : 'упаковок'}</div>
         </div>
         <div class="result-item">
           <div class="result-item-label">${labels.cost}</div>
-          <div class="result-item-val" style="font-size:14px">${(totalCost/1000000).toFixed(1)}</div>
-          <div class="result-item-unit">${lang === 'uz' ? 'mln so\'m' : lang === 'en' ? 'mln sum' : 'млн сум'}</div>
+          <div class="result-item-val" style="font-size:20px" data-count="${(totalCost/1000000).toFixed(1)}">${(totalCost/1000000).toFixed(1)}</div>
+          <div class="result-item-unit">${lang === 'uz' ? "mln so'm" : lang === 'en' ? 'mln sum' : 'млн сум'}</div>
         </div>
       </div>
 
@@ -429,8 +455,8 @@ function renderResult(body, lang) {
         </div>` : ''}
     </div>
 
-    <div style="margin-bottom:14px">
-      <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">${labels.yourInput}</div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px">${labels.yourInput}</div>
       <div class="summary-chips">
         <span class="summary-chip">${regionLabel}</span>
         <span class="summary-chip">${surfaceLabel}</span>
@@ -444,12 +470,14 @@ function renderResult(body, lang) {
     ${recProduct ? `
       <button class="btn-red full" style="margin-bottom:8px"
         onclick="addCalcToCart(${recProduct.id}, ${recThick}, ${packsNeeded})">
-        ${labels.viewProd}
+        <span data-icon="cart"></span>
+        ${labels.addToCart}
       </button>` : ''}
-    <a href="contacts.html" class="btn-outline full" style="margin-bottom:8px;text-decoration:none">
+    <a href="contacts.html" class="btn-outline full" style="margin-bottom:8px">
+      <span data-icon="phone"></span>
       ${labels.contact}
     </a>
-    <button class="btn-ghost full" onclick="resetCalc()">${labels.recalc}</button>`;
+    <button class="btn-ghost" style="display:block;width:100%;text-align:center" onclick="resetCalc()">↺ ${labels.recalc}</button>`;
 }
 
 function addCalcToCart(productId, thick, packs) {
@@ -458,18 +486,22 @@ function addCalcToCart(productId, thick, packs) {
   if (!prod) return;
   Cart.add(productId, thick, packs);
   const lang = getCurrentLang();
-  const msg = lang === 'ru' ? `${prod.name} добавлен в корзину` : `${prod.name} added`;
-  showToast(msg);
-  location.href = 'checkout.html';
+  const msg = lang === 'ru' ? `${prod.name} добавлен в корзину`
+            : lang === 'uz' ? `${prod.name} savatga qo'shildi`
+            : `${prod.name} added`;
+  showToast(msg, 'success');
+  setTimeout(() => location.href = 'checkout.html', 600);
 }
 
 function resetCalc() {
   calcState = { step: 1, region: null, surface: null, construction: null, area: null, goal: null };
+  if (window.hap) window.hap('soft');
   renderCalcStep();
 }
 
 function prevStep() {
   if (calcState.step <= 1) return;
   calcState.step--;
+  if (window.hap) window.hap('soft');
   renderCalcStep();
 }

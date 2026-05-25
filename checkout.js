@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// THERMO PLUS — Checkout v3
+// THERMO PLUS — Checkout v4
 // ═══════════════════════════════════════════════════════════════
 
 let checkoutStep = 0;
@@ -20,25 +20,31 @@ const TX_CO = {
     orderLabel:'Заказ',
     successActions:['Перейти в каталог','На главную'],
     tab:['Корзина','Данные','Готово'],
-    del:'Удалить',
-    mm:'мм',
+    del:'Удалить', mm:'мм',
+    deliveryMethod:'Способ получения', addrPlaceholder:'Улица, дом, квартира',
+    namePlaceholder:'Иван Иванов', cityPlaceholder:'Ташкент',
+    callMgr:'Заказ будет обработан менеджером. Точная стоимость и сроки уточняются при подтверждении.',
+    err:'Ошибка отправки. Позвоните нам.',
   },
   uz: {
-    cartTitle:'Savat', formTitle:'Ma\'lumotlaringiz', doneTitle:'Bajarildi',
-    empty:'Savat bo\'sh', emptyText:'Katalogdan mahsulot qo\'shing', toCatalog:'Katalog',
+    cartTitle:'Savat', formTitle:"Ma'lumotlaringiz", doneTitle:'Bajarildi',
+    empty:"Savat bo'sh", emptyText:"Katalogdan mahsulot qo'shing", toCatalog:'Katalog',
     total:'Jami', pcs:'dona', cartNext:'Buyurtma berish',
     name:'Ism va familiya', nameReq:'Ism majburiy',
     phone:'Telefon raqami', phoneReq:'Telefon majburiy',
     city:'Shahar', addr:'Yetkazib berish manzili',
-    delivery:'Yetkazib berish', pickup:'O\'zi olish',
+    delivery:'Yetkazib berish', pickup:"O'zi olish",
     submit:'Buyurtmani tasdiqlash', loading:'Yuborilmoqda...',
     successTitle:'Buyurtma qabul qilindi',
-    successText:'Menejerimiz 2 soat ichida siz bilan bog\'lanadi.',
+    successText:"Menejerimiz 2 soat ichida siz bilan bog'lanadi.",
     orderLabel:'Buyurtma',
     successActions:['Katalog','Bosh sahifa'],
-    tab:['Savat','Ma\'lumot','Tayyor'],
-    del:'O\'chirish',
-    mm:'mm',
+    tab:['Savat',"Ma'lumot",'Tayyor'],
+    del:"O'chirish", mm:'mm',
+    deliveryMethod:'Yetkazib berish usuli', addrPlaceholder:"Ko'cha, uy, xonadon",
+    namePlaceholder:'Ali Valiyev', cityPlaceholder:'Toshkent',
+    callMgr:"Buyurtmani menejer ko'rib chiqadi. Narx va muddatlar tasdiqlanishida aniqlanadi.",
+    err:"Yuborish xatosi. Bizga qo'ng'iroq qiling.",
   },
   en: {
     cartTitle:'Cart', formTitle:'Your details', doneTitle:'Done',
@@ -54,8 +60,11 @@ const TX_CO = {
     orderLabel:'Order',
     successActions:['Browse catalog','Go home'],
     tab:['Cart','Details','Done'],
-    del:'Delete',
-    mm:'mm',
+    del:'Delete', mm:'mm',
+    deliveryMethod:'Delivery method', addrPlaceholder:'Street, house, apartment',
+    namePlaceholder:'John Smith', cityPlaceholder:'Tashkent',
+    callMgr:'The order will be processed by a manager. Exact cost and timing will be confirmed.',
+    err:'Error sending. Please call us.',
   }
 };
 
@@ -65,13 +74,13 @@ function tx(key) {
 }
 
 function goStep(s) {
-  if (s > checkoutStep) return; // can only go back
+  if (s > checkoutStep) return;
   checkoutStep = s;
+  if (window.hap) window.hap('selection');
   renderStep();
 }
 
 function renderStep() {
-  // Update tabs
   const tabLabels = tx('tab');
   for (let i = 0; i <= 2; i++) {
     const tab = document.getElementById(`tab-${i}`);
@@ -83,7 +92,6 @@ function renderStep() {
     else if (i < checkoutStep) tab.classList.add('done');
   }
 
-  const lang = getCurrentLang();
   document.getElementById('page-sub').textContent = tx('tab')[checkoutStep] || '';
   document.querySelectorAll('[data-i18n]').forEach(el => {
     el.textContent = t(el.getAttribute('data-i18n'));
@@ -94,6 +102,9 @@ function renderStep() {
     case 1: renderForm(); break;
     case 2: renderSuccess(); break;
   }
+
+  if (typeof injectIcons === 'function') injectIcons();
+  if (window.TPAnim) window.TPAnim.refreshAll();
 }
 
 function renderCart() {
@@ -104,78 +115,81 @@ function renderCart() {
   if (items.length === 0) {
     content.innerHTML = `
       <div class="empty-state">
-        <div class="empty-icon" style="color:var(--text-3)">
-          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        </div>
+        <div class="empty-icon" data-icon="cart"></div>
         <div class="empty-title">${tx('empty')}</div>
         <div class="empty-text">${tx('emptyText')}</div>
-        <a href="index.html" style="margin-top:20px" class="btn-red" style="text-decoration:none">
-          ${tx('toCatalog')}
+        <a href="index.html" style="margin-top:24px;text-decoration:none">
+          <button class="btn-red">
+            <span data-icon="grid"></span> ${tx('toCatalog')}
+          </button>
         </a>
       </div>`;
+    if (typeof injectIcons === 'function') injectIcons();
     return;
   }
 
-  const itemsHtml = items.map(item => `
-    <div class="cart-item" id="ci-${item.key.replace('-','_')}">
+  const itemsHtml = items.map((item, idx) => `
+    <div class="cart-item" id="ci-${item.key.replace('-','_')}" style="animation-delay:${idx * 50}ms">
       <div class="cart-thumb">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-3)"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="2" y1="9" x2="22" y2="9"/></svg>
+        ${item.image
+          ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" onerror="this.outerHTML='<span data-icon=package></span>'">`
+          : `<span data-icon="package"></span>`}
       </div>
       <div class="cart-info">
         <div class="cart-name">${item.name}</div>
-        <div class="cart-sub">${item.thick} ${tx('mm')} · ${item.price.toLocaleString()} ${lang === 'uz' ? 'so\'m/м²' : lang === 'en' ? 'sum/m²' : 'сум/м²'}</div>
+        <div class="cart-sub">${item.thick} ${tx('mm')} · ${item.price.toLocaleString('ru-RU')} ${lang === 'uz' ? "so'm/м²" : lang === 'en' ? 'sum/m²' : 'сум/м²'}</div>
         <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
-          <div class="qty-ctrl" style="height:32px">
-            <button class="qty-btn" onclick="cartDelta('${item.key}', -1)" style="font-size:16px">−</button>
-            <span style="width:28px;text-align:center;font-size:13px;font-weight:700">${item.qty}</span>
-            <button class="qty-btn" onclick="cartDelta('${item.key}', 1)" style="font-size:16px">+</button>
+          <div class="qty-ctrl" style="height:34px">
+            <button class="qty-btn" onclick="cartDelta('${item.key}', -1)" style="font-size:16px;width:32px">−</button>
+            <span style="width:30px;text-align:center;font-size:13px;font-weight:700;font-family:var(--font-display)">${item.qty}</span>
+            <button class="qty-btn" onclick="cartDelta('${item.key}', 1)" style="font-size:16px;width:32px">+</button>
           </div>
-          <span style="font-size:12px;color:var(--text-2)">${tx('pcs')}</span>
+          <span style="font-size:11.5px;color:var(--text-3)">${tx('pcs')}</span>
         </div>
       </div>
       <div class="cart-right">
-        <div class="cart-total">${(item.price * item.qty).toLocaleString()}</div>
-        <button class="cart-del" onclick="Cart.remove('${item.key}');renderCart()" title="${tx('del')}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-        </button>
+        <div class="cart-total">${(item.price * item.qty).toLocaleString('ru-RU')}</div>
+        <button class="cart-del" onclick="Cart.remove('${item.key}');renderCart()" title="${tx('del')}" data-icon="trash"></button>
       </div>
     </div>`).join('');
 
   const total = Cart.total();
-  const sumLabel = lang === 'uz' ? 'so\'m' : lang === 'en' ? 'sum' : 'сум';
+  const sumLabel = lang === 'uz' ? "so'm" : lang === 'en' ? 'sum' : 'сум';
 
   content.innerHTML = `
     ${itemsHtml}
     <div class="cart-sum-row">
       <span class="cart-sum-label">${tx('total')}</span>
-      <span class="cart-sum-val">${total.toLocaleString()} ${sumLabel}</span>
+      <span class="cart-sum-val">${total.toLocaleString('ru-RU')} ${sumLabel}</span>
     </div>
-    <button class="btn-red full" style="margin-top:12px" onclick="checkoutStep=1;renderStep()">
+    <button class="btn-red full" style="margin-top:14px" onclick="checkoutStep=1;renderStep()">
       ${tx('cartNext')}
+      <span data-icon="arrowRight"></span>
     </button>
-    <a href="index.html" class="btn-outline full" style="margin-top:8px;text-decoration:none;text-align:center">
-      + ${lang === 'uz' ? 'Yana qo\'shish' : lang === 'en' ? 'Add more' : 'Добавить ещё'}
+    <a href="index.html" class="btn-outline full" style="margin-top:10px;text-decoration:none;justify-content:center">
+      + ${lang === 'uz' ? "Yana qo'shish" : lang === 'en' ? 'Add more' : 'Добавить ещё'}
     </a>`;
 
+  if (typeof injectIcons === 'function') injectIcons();
   Cart.updateBadge();
 }
 
 function cartDelta(key, delta) {
   Cart.updateQty(key, delta);
+  if (window.hap) window.hap('selection');
   renderCart();
 }
 
 let formData = { name:'', phone:'', city:'', address:'', delivery:'delivery' };
 
 function renderForm() {
-  const lang = getCurrentLang();
   const content = document.getElementById('step-content');
 
   content.innerHTML = `
     <div class="form-field">
       <label class="form-label">${tx('name')} <em>*</em></label>
       <input class="form-input" id="f-name" type="text" autocomplete="name"
-        placeholder="${lang === 'ru' ? 'Иван Иванов' : lang === 'uz' ? 'Ali Valiyev' : 'John Smith'}"
+        placeholder="${tx('namePlaceholder')}"
         value="${formData.name}" oninput="formData.name=this.value"/>
     </div>
     <div class="form-field">
@@ -187,22 +201,18 @@ function renderForm() {
     <div class="form-field">
       <label class="form-label">${tx('city')}</label>
       <input class="form-input" id="f-city" type="text"
-        placeholder="${lang === 'ru' ? 'Ташкент' : lang === 'uz' ? 'Toshkent' : 'Tashkent'}"
+        placeholder="${tx('cityPlaceholder')}"
         value="${formData.city}" oninput="formData.city=this.value"/>
     </div>
     <div class="form-field">
-      <label class="form-label">${lang === 'uz' ? 'Yetkazib berish usuli' : lang === 'en' ? 'Delivery method' : 'Способ получения'}</label>
+      <label class="form-label">${tx('deliveryMethod')}</label>
       <div class="del-opts">
         <div class="del-opt ${formData.delivery==='delivery'?'sel':''}" onclick="setDelivery('delivery')">
-          <div style="font-size:20px;margin-bottom:4px">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-2)"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-          </div>
+          <div class="del-opt-icon" data-icon="truck"></div>
           <div class="del-opt-label">${tx('delivery')}</div>
         </div>
         <div class="del-opt ${formData.delivery==='pickup'?'sel':''}" onclick="setDelivery('pickup')">
-          <div style="font-size:20px;margin-bottom:4px">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-2)"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
-          </div>
+          <div class="del-opt-icon" data-icon="store"></div>
           <div class="del-opt-label">${tx('pickup')}</div>
         </div>
       </div>
@@ -211,32 +221,41 @@ function renderForm() {
     <div class="form-field">
       <label class="form-label">${tx('addr')}</label>
       <input class="form-input" id="f-addr" type="text"
-        placeholder="${lang === 'ru' ? 'Улица, дом, квартира' : lang === 'uz' ? 'Ko\'cha, uy, xonadon' : 'Street, house, apartment'}"
+        placeholder="${tx('addrPlaceholder')}"
         value="${formData.address}" oninput="formData.address=this.value"/>
     </div>` : ''}
 
-    <div style="background:var(--bg);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--text-2);line-height:1.6">
-      ${lang === 'ru' ? 'Заказ будет обработан менеджером. Точная стоимость и сроки уточняются при подтверждении.'
-        : lang === 'uz' ? 'Buyurtma menejer tomonidan ko\'rib chiqiladi. Narx va muddatlar tasdiqlanishida aniqlanadi.'
-        : 'The order will be processed by a manager. Exact cost and timing will be confirmed.'}
+    <div style="background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--text-2);line-height:1.6;border-left:3px solid var(--red)">
+      ${tx('callMgr')}
     </div>
 
     <button class="btn-red full" id="submit-btn" onclick="submitOrder()">
       ${tx('submit')}
     </button>`;
+
+  if (typeof injectIcons === 'function') injectIcons();
 }
 
 function setDelivery(val) {
   formData.delivery = val;
+  if (window.hap) window.hap('selection');
   renderForm();
 }
 
 async function submitOrder() {
-  if (!formData.name.trim()) { showToast('⚠️ ' + tx('nameReq')); return; }
-  if (!formData.phone.trim()) { showToast('⚠️ ' + tx('phoneReq')); return; }
+  if (!formData.name.trim()) {
+    showToast(tx('nameReq'), 'warning');
+    if (window.hap) window.hap('error');
+    return;
+  }
+  if (!formData.phone.trim()) {
+    showToast(tx('phoneReq'), 'warning');
+    if (window.hap) window.hap('error');
+    return;
+  }
 
   const btn = document.getElementById('submit-btn');
-  if (btn) { btn.textContent = tx('loading'); btn.disabled = true; }
+  if (btn) { btn.textContent = tx('loading'); btn.disabled = true; btn.style.opacity = '0.7'; }
 
   const result = await sendToB24(formData, Cart.items());
 
@@ -244,30 +263,31 @@ async function submitOrder() {
     orderNum = '#' + Math.floor(10000 + Math.random() * 90000);
     Cart.clear();
     checkoutStep = 2;
+    if (window.hap) window.hap('success');
     renderStep();
   } else {
-    if (btn) { btn.textContent = tx('submit'); btn.disabled = false; }
-    const lang = getCurrentLang();
-    showToast(lang === 'ru' ? 'Ошибка отправки. Позвоните нам.' : 'Error. Please call us.');
+    if (btn) { btn.textContent = tx('submit'); btn.disabled = false; btn.style.opacity = ''; }
+    if (window.hap) window.hap('error');
+    showToast(tx('err'), 'error');
   }
 }
 
 function renderSuccess() {
-  const lang = getCurrentLang();
   const acts = tx('successActions');
   document.getElementById('step-content').innerHTML = `
     <div class="success-wrap">
-      <div style="width:72px;height:72px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="success-icon-wrap">
+        <span style="color:var(--green)" data-icon="check"></span>
       </div>
       <div class="success-h">${tx('successTitle')}</div>
       <div class="order-num-badge">${tx('orderLabel')} ${orderNum}</div>
       <div class="success-t">${tx('successText')}</div>
     </div>
-    <a href="index.html" class="btn-red full" style="text-decoration:none;text-align:center;display:flex;justify-content:center;align-items:center;margin-bottom:8px">
-      ${acts[0]}
+    <a href="index.html" class="btn-red full" style="text-decoration:none;text-align:center;justify-content:center;margin-bottom:10px">
+      <span data-icon="grid"></span> ${acts[0]}
     </a>
-    <a href="about.html" class="btn-outline full" style="text-decoration:none;text-align:center">
-      ${acts[1]}
+    <a href="about.html" class="btn-outline full" style="text-decoration:none;text-align:center;justify-content:center">
+      <span data-icon="home"></span> ${acts[1]}
     </a>`;
+  if (typeof injectIcons === 'function') injectIcons();
 }

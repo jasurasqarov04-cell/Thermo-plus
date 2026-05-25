@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <meta name="theme-color" content="#15130F"/>
   <title>THERMO PLUS</title>
   <link rel="stylesheet" href="style.css"/>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -31,57 +32,79 @@
 
   <div class="page">
 
-    <!-- HERO -->
-    <div class="hero">
-      <h1 class="hero-headline" id="hero-h">Базальтовая вата — надёжная теплоизоляция</h1>
-      <p class="hero-desc" id="hero-d">Натуральный материал для утепления фасадов, кровли и перегородок.</p>
-      <div class="hero-actions">
-        <a href="index.html" class="btn-red" id="hero-btn1">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-          <span>Перейти в каталог</span>
-        </a>
-        <a href="calculator.html" class="btn-outline" id="hero-btn2" style="text-decoration:none">
-          <span>Рассчитать</span>
-        </a>
+    <!-- HERO with parallax layers -->
+    <div class="hero" data-parallax-container>
+      <div class="hero-bg">
+        <div class="hero-grid"></div>
+        <div class="hero-blob b1 parallax" data-parallax="0.18" data-depth="1.2"></div>
+        <div class="hero-blob b2 parallax" data-parallax="0.10" data-depth="0.8"></div>
+        <div class="hero-blob b3 parallax" data-parallax="0.25" data-depth="2.0"></div>
       </div>
 
-      <!-- Stats strip -->
-      <div class="hero-stats">
-        <div class="stat-item">
-          <div class="stat-num">1000<span class="stat-unit">°C</span></div>
-          <div class="stat-label" id="stat1">огнестой&shy;кость</div>
+      <div class="hero-content">
+        <span class="hero-eyebrow" id="hero-eyebrow">
+          <span class="dot"></span>
+          <span id="hero-eyebrow-text">Производство · Узбекистан</span>
+        </span>
+
+        <h1 class="hero-headline" id="hero-h">
+          Базальтовая вата —
+          <span class="accent">надёжная теплоизоляция</span>
+        </h1>
+        <p class="hero-desc" id="hero-d">Натуральный материал для утепления фасадов, кровли и перегородок. Сертифицировано ГОСТ и ISO.</p>
+        <div class="hero-actions">
+          <a href="index.html" class="btn-red" id="hero-btn1">
+            <span data-icon="grid"></span>
+            <span>Перейти в каталог</span>
+          </a>
+          <a href="calculator.html" class="btn-outline" id="hero-btn2">
+            <span data-icon="calc"></span>
+            <span>Рассчитать</span>
+          </a>
         </div>
-        <div class="stat-item">
-          <div class="stat-num">30 000<span class="stat-unit"> т</span></div>
-          <div class="stat-label" id="stat2">годовая мощность</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">50<span class="stat-unit"> лет</span></div>
-          <div class="stat-label" id="stat3">срок службы</div>
+
+        <!-- Stats strip with count-up -->
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="stat-num"><span data-count="1000">1000</span><span class="stat-unit">°C</span></div>
+            <div class="stat-label" id="stat1">огнестой&shy;кость</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num"><span data-count="30000">30 000</span><span class="stat-unit"> т</span></div>
+            <div class="stat-label" id="stat2">годовая мощность</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num"><span data-count="50">50</span><span class="stat-unit"> лет</span></div>
+            <div class="stat-label" id="stat3">срок службы</div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- FEATURES -->
-    <div class="home-section">
-      <div class="section-label">Почему THERMO PLUS</div>
+    <div class="home-section reveal">
+      <div class="section-label" id="features-label">Почему THERMO PLUS</div>
       <div class="features-grid">
-        <div class="feature-card">
+        <div class="feature-card reveal">
+          <div class="feature-icon-bg" data-icon="fire"></div>
           <div class="feature-num">1000°C</div>
           <div class="feature-title" id="f1t">Огнестойкость</div>
           <div class="feature-desc" id="f1d">Не горит, не распространяет огонь</div>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
+          <div class="feature-icon-bg" data-icon="sound"></div>
           <div class="feature-num">50 дБ</div>
           <div class="feature-title" id="f2t">Шумоизоляция</div>
           <div class="feature-desc" id="f2d">Поглощает звук до 50 дБ</div>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
+          <div class="feature-icon-bg" data-icon="thermo"></div>
           <div class="feature-num">40%</div>
           <div class="feature-title" id="f3t">Теплосбережение</div>
           <div class="feature-desc" id="f3d">Снижает теплопотери до 40%</div>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
+          <div class="feature-icon-bg" data-icon="eco"></div>
           <div class="feature-num">НГ</div>
           <div class="feature-title" id="f4t">Экологичность</div>
           <div class="feature-desc" id="f4d">Натуральный базальтовый камень</div>
@@ -90,66 +113,73 @@
     </div>
 
     <!-- CATEGORIES PREVIEW -->
-    <div class="home-section" style="border-top:1px solid var(--border)">
+    <div class="home-section reveal" style="border-top:1px solid var(--border)">
       <div class="section-label" id="cats-label">Области применения</div>
       <div class="cat-grid">
-        <a class="cat-card" href="index.html?cat=facade">
-          <div class="cat-card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
-          </div>
+        <a class="cat-card reveal" href="index.html?cat=facade">
+          <div class="cat-card-icon" data-icon="facade"></div>
           <span class="cat-card-label" id="cat1">Фасад</span>
         </a>
-        <a class="cat-card" href="index.html?cat=vent">
-          <div class="cat-card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M12 3l-3 9 3 9 3-9z"/></svg>
-          </div>
+        <a class="cat-card reveal" href="index.html?cat=vent">
+          <div class="cat-card-icon" data-icon="vent"></div>
           <span class="cat-card-label" id="cat2">Вент. фасад</span>
         </a>
-        <a class="cat-card" href="index.html?cat=roof">
-          <div class="cat-card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V21H3z"/></svg>
-          </div>
+        <a class="cat-card reveal" href="index.html?cat=roof">
+          <div class="cat-card-icon" data-icon="roof"></div>
           <span class="cat-card-label" id="cat3">Кровля</span>
         </a>
-        <a class="cat-card" href="index.html?cat=floor">
-          <div class="cat-card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="14" width="20" height="6" rx="1"/><line x1="6" y1="14" x2="6" y2="4"/><line x1="12" y1="14" x2="12" y2="8"/><line x1="18" y1="14" x2="18" y2="6"/></svg>
-          </div>
+        <a class="cat-card reveal" href="index.html?cat=floor">
+          <div class="cat-card-icon" data-icon="floor"></div>
           <span class="cat-card-label" id="cat4">Пол</span>
         </a>
-        <a class="cat-card" href="index.html?cat=universal">
-          <div class="cat-card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9 9 9"/></svg>
-          </div>
+        <a class="cat-card reveal" href="index.html?cat=universal">
+          <div class="cat-card-icon" data-icon="universal"></div>
           <span class="cat-card-label" id="cat5">Универсал</span>
         </a>
-        <a class="cat-card" href="index.html?cat=sandwich">
-          <div class="cat-card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="4"/><rect x="2" y="11" width="20" height="4"/><rect x="2" y="17" width="20" height="2"/></svg>
-          </div>
+        <a class="cat-card reveal" href="index.html?cat=sandwich">
+          <div class="cat-card-icon" data-icon="sandwich"></div>
           <span class="cat-card-label" id="cat6">Сэндвич</span>
         </a>
       </div>
     </div>
 
     <!-- CALCULATOR CTA -->
-    <div class="cta-banner">
+    <div class="cta-banner reveal">
       <div class="cta-banner-title" id="cta-title">Не знаете, какую толщину выбрать?</div>
-      <div class="cta-banner-sub" id="cta-sub">Используйте наш калькулятор — он подберёт нужную толщину и количество материала</div>
-      <a href="calculator.html" class="btn-white" id="cta-btn">Рассчитать толщину</a>
+      <div class="cta-banner-sub" id="cta-sub">Калькулятор подберёт оптимальную толщину и количество материала за минуту</div>
+      <a href="calculator.html" class="btn-white" id="cta-btn">
+        <span data-icon="calc"></span>
+        Рассчитать толщину
+      </a>
     </div>
 
     <!-- ABOUT COMPANY -->
-    <div class="about-section">
+    <div class="about-section reveal">
       <div class="section-label" id="about-label">О компании</div>
       <div class="section-card" style="margin-bottom:0">
+        <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:14px">
+          <div style="width:48px;height:48px;border-radius:14px;background:var(--grad-stone);display:flex;align-items:center;justify-content:center;color:#FF6B35;flex-shrink:0" data-icon="factory"></div>
+          <div>
+            <div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:var(--text);letter-spacing:-0.2px" id="about-company-name">Khorezm Insulation Group</div>
+            <div style="font-size:12px;color:var(--text-3);margin-top:2px" id="about-company-loc">Хорезмская область · Узбекистан</div>
+          </div>
+        </div>
         <div style="font-size:13px;color:var(--text-2);line-height:1.7" id="about-text">
           СП ООО «Khorezm Insulation Group» — производитель базальтовой ваты в Узбекистане. Производство расположено в Хорезмской области. Продукция соответствует ГОСТ Р 52953-2008 и сертифицирована по ISO 9001:2015.
         </div>
-        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-          <span style="background:var(--bg);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;color:var(--text-2)">ГОСТ Р 52953-2008</span>
-          <span style="background:var(--bg);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;color:var(--text-2)">ISO 9001:2015</span>
-          <span style="background:var(--red-bg);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;color:var(--red)">НГ сертификат</span>
+        <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+          <span style="background:var(--bg);border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--text-2);display:inline-flex;align-items:center;gap:5px">
+            <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:block"></span>
+            ГОСТ Р 52953-2008
+          </span>
+          <span style="background:var(--bg);border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--text-2);display:inline-flex;align-items:center;gap:5px">
+            <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:block"></span>
+            ISO 9001:2015
+          </span>
+          <span style="background:var(--red-bg);border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--red);display:inline-flex;align-items:center;gap:5px" id="about-fire-cert">
+            <span style="width:6px;height:6px;border-radius:50%;background:var(--red);display:block"></span>
+            НГ сертификат
+          </span>
         </div>
       </div>
     </div>
@@ -159,74 +189,84 @@
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <a class="nav-item active" href="about.html">
-      <span class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
-      </span>
+      <span class="nav-icon" data-icon="home"></span>
       <span class="nav-label">Главная</span>
     </a>
     <a class="nav-item" href="index.html">
-      <span class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-      </span>
+      <span class="nav-icon" data-icon="grid"></span>
       <span class="nav-label">Каталог</span>
     </a>
     <a class="nav-item nav-item-cart" href="checkout.html">
       <span class="nav-icon">
         <span class="nav-icon-wrap">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span data-icon="cart"></span>
           <span class="cart-count nav-cart-badge" style="display:none">0</span>
         </span>
       </span>
       <span class="nav-label" data-i18n="cart">Корзина</span>
     </a>
     <a class="nav-item" href="calculator.html">
-      <span class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
-      </span>
+      <span class="nav-icon" data-icon="calc"></span>
       <span class="nav-label">Калькулятор</span>
     </a>
     <a class="nav-item" href="contacts.html">
-      <span class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37 2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.7a16 16 0 0 0 5.39 5.39l.98-.98a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21 15.93l.01 1z"/></svg>
-      </span>
+      <span class="nav-icon" data-icon="phone"></span>
       <span class="nav-label">Контакты</span>
     </a>
   </nav>
 
 </div>
 
+<script src="icons.js"></script>
 <script src="i18n.js"></script>
 <script src="app.js"></script>
+<script src="animations.js"></script>
 <script>
-if (window.Telegram?.WebApp) Telegram.WebApp.ready();
+if (window.Telegram?.WebApp) {
+  Telegram.WebApp.ready();
+  try { Telegram.WebApp.expand(); } catch(_){}
+  try { Telegram.WebApp.setHeaderColor('#15130F'); } catch(_){}
+}
 
 const HOME_TX = {
   uz: {
     sub:"Bazalt vata ishlab chiqaruvchi",
-    heroH:"Bazalt vata — ishonchli issiqlik izolyatsiyasi",
-    heroD:"Fasad, tom va bo'limlarni issiqlik izolyatsiyasi uchun tabiiy material.",
+    eyebrow:"Ishlab chiqarish · O'zbekiston",
+    heroH:"Bazalt vata —",
+    heroHAccent:"ishonchli issiqlik izolyatsiyasi",
+    heroD:"Fasad, tom va bo'limlarni issiqlik izolyatsiyasi uchun tabiiy material. GOST va ISO sertifikati.",
     btn1:"Katalog",btn2:"Hisoblash",
     stat1:"yong'in bardoshliligi",stat2:"yillik quvvat",stat3:"xizmat muddati",
+    featuresLabel:"Nima uchun THERMO PLUS",
     catsLabel:"Qo'llanish sohalari",ctaTitle:"Qaysi qalinlikni tanlashni bilmayapsizmi?",
-    ctaSub:"Kalkulyatorimizdan foydalaning — kerakli qalinlik va miqdorni hisoblaydi",ctaBtn:"Qalinlikni hisoblash",
+    ctaSub:"Kalkulyator bir daqiqada optimal qalinlik va miqdorni tanlaydi",ctaBtn:"Qalinlikni hisoblash",
     aboutLabel:"Kompaniya haqida",
-    aboutText:"«Khorezm Insulation Group» — O'zbekistonda bazalt vata ishlab chiqaruvchi. Ishlab chiqarish Xorazm viloyatida joylashgan.",
+    aboutCompany:"Khorezm Insulation Group",
+    aboutLoc:"Xorazm viloyati · O'zbekiston",
+    aboutText:"«Khorezm Insulation Group» — O'zbekistondagi bazalt vata ishlab chiqaruvchi. Ishlab chiqarish Xorazm viloyatida joylashgan. Mahsulotlar GOST R 52953-2008 va ISO 9001:2015 talablariga javob beradi.",
+    aboutFire:"NG sertifikati",
     f1t:"Yong'in bardoshliligi",f1d:"Yonmaydi, olovni tarqatmaydi",
-    f2t:"Tovush izolyatsiyasi",f2d:"50 dBgacha tovushni so'radi",
-    f3t:"Issiqlik tejamligi",f3d:"Issiqlik yo'qotilishini 40% gacha kamaytiradi",
+    f2t:"Tovush izolyatsiyasi",f2d:"50 dB gacha tovushni so'radi",
+    f3t:"Issiqlik tejamligi",f3d:"Issiqlikni 40% gacha saqlaydi",
     f4t:"Ekologiklik",f4d:"Tabiiy bazalt tosh",
     cat1:"Fasad",cat2:"Vent. fasad",cat3:"Tom",cat4:"Pol",cat5:"Universal",cat6:"Sandwich",
   },
   ru: {
     sub:"Производитель базальтовой ваты",
-    heroH:"Базальтовая вата — надёжная теплоизоляция",
-    heroD:"Натуральный материал для утепления фасадов, кровли и перегородок.",
+    eyebrow:"Производство · Узбекистан",
+    heroH:"Базальтовая вата —",
+    heroHAccent:"надёжная теплоизоляция",
+    heroD:"Натуральный материал для утепления фасадов, кровли и перегородок. Сертифицирован по ГОСТ и ISO.",
     btn1:"Перейти в каталог",btn2:"Рассчитать",
     stat1:"огнестойкость",stat2:"годовая мощность",stat3:"срок службы",
+    featuresLabel:"Почему THERMO PLUS",
     catsLabel:"Области применения",ctaTitle:"Не знаете, какую толщину выбрать?",
-    ctaSub:"Используйте наш калькулятор — он подберёт нужную толщину и количество материала",ctaBtn:"Рассчитать толщину",
+    ctaSub:"Калькулятор подберёт оптимальную толщину и количество материала за минуту",ctaBtn:"Рассчитать толщину",
     aboutLabel:"О компании",
-    aboutText:"СП ООО «Khorezm Insulation Group» — производитель базальтовой ваты в Узбекистане. Производство расположено в Хорезмской области.",
+    aboutCompany:"Khorezm Insulation Group",
+    aboutLoc:"Хорезмская область · Узбекистан",
+    aboutText:"СП ООО «Khorezm Insulation Group» — производитель базальтовой ваты в Узбекистане. Производство расположено в Хорезмской области. Продукция соответствует ГОСТ Р 52953-2008 и сертифицирована по ISO 9001:2015.",
+    aboutFire:"НГ сертификат",
     f1t:"Огнестойкость",f1d:"Не горит, не распространяет огонь",
     f2t:"Шумоизоляция",f2d:"Поглощает звук до 50 дБ",
     f3t:"Теплосбережение",f3d:"Снижает теплопотери до 40%",
@@ -235,14 +275,20 @@ const HOME_TX = {
   },
   en: {
     sub:"Basalt wool manufacturer",
-    heroH:"Basalt wool — reliable thermal insulation",
-    heroD:"Natural material for insulating facades, roofing and partitions.",
+    eyebrow:"Manufacturing · Uzbekistan",
+    heroH:"Basalt wool —",
+    heroHAccent:"reliable thermal insulation",
+    heroD:"Natural material for insulating facades, roofs and partitions. GOST & ISO certified.",
     btn1:"View catalog",btn2:"Calculate",
     stat1:"fire resistance",stat2:"annual capacity",stat3:"service life",
+    featuresLabel:"Why THERMO PLUS",
     catsLabel:"Application areas",ctaTitle:"Not sure which thickness to choose?",
-    ctaSub:"Use our calculator to find the right thickness and quantity of material",ctaBtn:"Calculate thickness",
-    aboutLabel:"About the company",
-    aboutText:"JV LLC 'Khorezm Insulation Group' — basalt wool manufacturer in Uzbekistan. Production is located in the Khorezm region.",
+    ctaSub:"Our calculator will select the optimal thickness and quantity of material in a minute",ctaBtn:"Calculate thickness",
+    aboutLabel:"About",
+    aboutCompany:"Khorezm Insulation Group",
+    aboutLoc:"Khorezm region · Uzbekistan",
+    aboutText:"JV LLC 'Khorezm Insulation Group' — basalt wool manufacturer in Uzbekistan. Production is located in the Khorezm region. Products comply with GOST R 52953-2008 and are ISO 9001:2015 certified.",
+    aboutFire:"Fire safety NG",
     f1t:"Fire resistance",f1d:"Non-combustible, does not spread fire",
     f2t:"Sound insulation",f2d:"Absorbs sound up to 50 dB",
     f3t:"Heat saving",f3d:"Reduces heat loss by up to 40%",
@@ -255,15 +301,21 @@ function renderHome() {
   const lang = getCurrentLang();
   const tx = HOME_TX[lang] || HOME_TX.ru;
   document.getElementById('logo-sub').textContent = tx.sub;
-  document.getElementById('hero-h').textContent = tx.heroH;
+  document.getElementById('hero-eyebrow-text').textContent = tx.eyebrow;
+
+  const heroH = document.getElementById('hero-h');
+  heroH.innerHTML = `${tx.heroH} <span class="accent">${tx.heroHAccent}</span>`;
   document.getElementById('hero-d').textContent = tx.heroD;
-  document.getElementById('hero-btn1').innerHTML = `
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-    <span>${tx.btn1}</span>`;
-  document.getElementById('hero-btn2').innerHTML = `<span>${tx.btn2}</span>`;
+
+  const btn1 = document.getElementById('hero-btn1');
+  btn1.innerHTML = `<span data-icon="grid"></span><span>${tx.btn1}</span>`;
+  const btn2 = document.getElementById('hero-btn2');
+  btn2.innerHTML = `<span data-icon="calc"></span><span>${tx.btn2}</span>`;
+
   document.getElementById('stat1').textContent = tx.stat1;
   document.getElementById('stat2').textContent = tx.stat2;
   document.getElementById('stat3').textContent = tx.stat3;
+  document.getElementById('features-label').textContent = tx.featuresLabel;
   document.getElementById('f1t').textContent = tx.f1t;
   document.getElementById('f1d').textContent = tx.f1d;
   document.getElementById('f2t').textContent = tx.f2t;
@@ -281,14 +333,21 @@ function renderHome() {
   document.getElementById('cat6').textContent = tx.cat6;
   document.getElementById('cta-title').textContent = tx.ctaTitle;
   document.getElementById('cta-sub').textContent = tx.ctaSub;
-  document.getElementById('cta-btn').textContent = tx.ctaBtn;
+  const ctaBtn = document.getElementById('cta-btn');
+  ctaBtn.innerHTML = `<span data-icon="calc"></span> ${tx.ctaBtn}`;
   document.getElementById('about-label').textContent = tx.aboutLabel;
+  document.getElementById('about-company-name').textContent = tx.aboutCompany;
+  document.getElementById('about-company-loc').textContent = tx.aboutLoc;
   document.getElementById('about-text').textContent = tx.aboutText;
+  document.getElementById('about-fire-cert').lastChild.textContent = ' ' + tx.aboutFire;
 
   // Nav labels
   const navLabels = document.querySelectorAll('.bottom-nav .nav-label');
   const navKeys = ['home','catalog','cart','calculator','contacts'];
   navLabels.forEach((el, i) => { if (navKeys[i]) el.textContent = t(navKeys[i]); });
+
+  // Re-inject any newly added data-icon nodes
+  if (typeof injectIcons === 'function') injectIcons();
 }
 
 function onLangChange() { renderHome(); }

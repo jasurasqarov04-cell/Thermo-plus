@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// THERMO PLUS — Shared App Logic v3
+// THERMO PLUS — Shared App Logic v4
 // ═══════════════════════════════════════════════════════════════
 
 // ─── STORAGE ─────────────────────────────────────────────────────
@@ -23,12 +23,17 @@ const Cart = {
       const prod = PRODUCTS_DATA.find(p => p.id === productId);
       if (!prod) return;
       const price = getPrice(prod, thickness);
-      items.push({ key, id: productId, name: prod.name, thick: thickness, price, qty, category: prod.category });
+      items.push({ key, id: productId, name: prod.name, thick: thickness, price, qty, category: prod.category, image: prod.image });
     }
     Store.set(Cart._key, items);
     Cart.updateBadge();
+    if (window.hap) window.hap('light');
   },
-  remove(key) { Store.set(Cart._key, Cart.items().filter(i => i.key !== key)); Cart.updateBadge(); },
+  remove(key) {
+    Store.set(Cart._key, Cart.items().filter(i => i.key !== key));
+    Cart.updateBadge();
+    if (window.hap) window.hap('warning');
+  },
   updateQty(key, delta) {
     Store.set(Cart._key, Cart.items().map(i => i.key === key ? { ...i, qty: Math.max(1, i.qty + delta) } : i));
     Cart.updateBadge();
@@ -62,6 +67,7 @@ const Favs = {
     if (isFav) ids = ids.filter(id => id !== productId);
     else ids.push(productId);
     Store.set(Favs._key, ids);
+    if (window.hap) window.hap(isFav ? 'soft' : 'medium');
     return !isFav;
   },
   has: (productId) => Favs.ids().includes(productId),
@@ -70,47 +76,60 @@ const Favs = {
 };
 
 // ─── PRICE CALC ───────────────────────────────────────────────────
+// Linear scaling against the base (50mm) price.
 function getPrice(prod, thick) {
-  if (thick <= 50) return prod.pricePerM2;
-  return Math.round(prod.pricePerM2 * (thick / 50));
+  const base = prod.pricePerM2;
+  const ref = (prod.thicknesses && prod.thicknesses[0]) || 50;
+  // Round to nearest 10 sum
+  const v = base * (thick / ref);
+  return Math.round(v / 10) * 10;
 }
 
 function getPackArea(prod, thick) {
-  const slabs = thick <= 50 ? prod.packSlabs : Math.max(1, Math.floor(prod.packSlabs / 2));
-  return Math.round(1.2 * 0.6 * slabs * 100) / 100;
+  // Pack area shrinks as slabs get thicker (fixed pack volume)
+  const ref = (prod.thicknesses && prod.thicknesses[0]) || 50;
+  const slabsRef = prod.packSlabs || 9;
+  const slabs = Math.max(1, Math.round(slabsRef * ref / thick));
+  const area = 1.2 * 0.6 * slabs;
+  return Math.round(area * 100) / 100;
 }
 
 // ─── TOAST ────────────────────────────────────────────────────────
-function showToast(msg) {
+function showToast(msg, type = 'default') {
   const old = document.querySelector('.toast');
   if (old) old.remove();
   const el = document.createElement('div');
   el.className = 'toast';
-  el.textContent = msg;
+  const iconHtml =
+    type === 'success' ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>` :
+    type === 'error'   ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>` :
+    type === 'warning' ? `<span style="color:#FBBF24;font-weight:900">!</span>` : '';
+  el.innerHTML = `${iconHtml}<span>${msg}</span>`;
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 2600);
 }
 
 // ─── CATEGORY MAPS ────────────────────────────────────────────────
-const CAT_ICON_SVG = {
-  facade:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>`,
-  vent:      `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M12 3l-3 9 3 9 3-9z"/></svg>`,
-  roof:      `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V21H3z"/></svg>`,
-  floor:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="14" width="20" height="6" rx="1"/><line x1="6" y1="14" x2="6" y2="4"/><line x1="12" y1="14" x2="12" y2="8"/><line x1="18" y1="14" x2="18" y2="6"/></svg>`,
-  universal: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9 9 9"/></svg>`,
-  sandwich:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="4"/><rect x="2" y="11" width="20" height="4"/><rect x="2" y="17" width="20" height="2"/></svg>`,
-};
+// Use new SVG icon library when available, fallback to inline.
+function catIconSvg(category) {
+  if (typeof ic === 'function') return ic(category) || '';
+  return '';
+}
+const CAT_ICON_SVG = new Proxy({}, {
+  get: (_, cat) => catIconSvg(cat)
+});
 
 // Heart SVG
 function heartSvg(filled) {
+  if (typeof ic === 'function') return filled ? ic('heartFilled') : ic('heart');
   return filled
-    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="#C71219" stroke="#C71219" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
-    : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
+    : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
 }
 
 // ─── PRODUCT IMAGE HTML ───────────────────────────────────────────
 function buildProductImgHtml(prod) {
-  const placeholder = CAT_ICON_SVG[prod.category] || '';
+  const placeholder = catIconSvg(prod.category) || '';
   if (prod.image) {
     return `<img src="${prod.image}" alt="${prod.name}" loading="lazy"
               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
@@ -119,7 +138,7 @@ function buildProductImgHtml(prod) {
   return `<span class="prod-img-placeholder" style="color:var(--text-3)">${placeholder}</span>`;
 }
 
-// ─── PRODUCT CARD BUILDER (horizontal layout) ─────────────────────
+// ─── PRODUCT CARD BUILDER ─────────────────────────────────────────
 function buildProductCard(prod, selectedThick) {
   const lang = getCurrentLang();
   const th = selectedThick || prod.thicknesses[0];
@@ -142,10 +161,11 @@ function buildProductCard(prod, selectedThick) {
         <div class="prod-info">
           <div class="prod-category">${catLabel}</div>
           <div class="prod-name" onclick="openDetail(${prod.id})">${prod.name}</div>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+          <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
             <div class="prod-badges">
               <span class="badge badge-fire">НГ</span>
               ${prod.badge ? `<span class="badge badge-pro">${prod.badge}</span>` : ''}
+              <span class="badge" style="background:var(--bg);color:var(--text-3)">${prod.density} кг/м³</span>
             </div>
           </div>
         </div>
@@ -153,7 +173,7 @@ function buildProductCard(prod, selectedThick) {
           <div class="prod-img-wrap" onclick="openDetail(${prod.id})">
             ${buildProductImgHtml(prod)}
           </div>
-          <button class="fav-btn-card ${isFav ? 'fav-active' : ''}" onclick="toggleFavCard(event, ${prod.id})" id="fav-${prod.id}">
+          <button class="fav-btn-card ${isFav ? 'fav-active' : ''}" onclick="toggleFavCard(event, ${prod.id})" id="fav-${prod.id}" aria-label="favorite">
             ${heartSvg(isFav)}
           </button>
         </div>
@@ -163,7 +183,7 @@ function buildProductCard(prod, selectedThick) {
 
       <div class="prod-price-row">
         <div class="prod-price" id="price-${prod.id}">
-          ${price.toLocaleString()} <small>${t('currency')}</small>
+          ${price.toLocaleString('ru-RU')} <small>${t('currency')}</small>
         </div>
       </div>
 
@@ -220,27 +240,31 @@ function setQtyAndCart(id, val) {
 function flyToCart(productId) {
   const card = document.getElementById(`pcard-${productId}`);
   const cartNavItem = document.querySelector('.nav-item-cart .nav-icon-wrap');
-  if (!card || !cartNavItem) return;
-  const srcRect = card.getBoundingClientRect();
-  const dstRect = cartNavItem.getBoundingClientRect();
+  if (!cartNavItem) return;
+
+  const src = card ? card.getBoundingClientRect() : { left: window.innerWidth/2 - 12, top: window.innerHeight/2 - 12, width: 24, height: 24 };
+  const dst = cartNavItem.getBoundingClientRect();
+
   const dot = document.createElement('div');
   dot.style.cssText = `
-    position:fixed;width:8px;height:8px;border-radius:50%;
-    background:var(--red);z-index:9999;pointer-events:none;
-    left:${srcRect.left + srcRect.width / 2 - 4}px;
-    top:${srcRect.top + srcRect.height / 2 - 4}px;
-    transition:left .4s cubic-bezier(.4,0,.2,1),top .4s cubic-bezier(.4,0,.2,1),opacity .4s,transform .4s;
+    position:fixed;width:14px;height:14px;border-radius:50%;
+    background: var(--grad-red);
+    box-shadow: 0 4px 12px rgba(199,18,25,.55);
+    z-index:9999;pointer-events:none;
+    left:${src.left + src.width / 2 - 7}px;
+    top:${src.top + src.height / 2 - 7}px;
+    transition:left .55s cubic-bezier(.4,0,.2,1),top .55s cubic-bezier(.4,0,.2,1),opacity .55s,transform .55s;
   `;
   document.body.appendChild(dot);
   requestAnimationFrame(() => {
-    dot.style.left = `${dstRect.left + dstRect.width / 2 - 4}px`;
-    dot.style.top  = `${dstRect.top + dstRect.height / 2 - 4}px`;
+    dot.style.left = `${dst.left + dst.width / 2 - 7}px`;
+    dot.style.top  = `${dst.top + dst.height / 2 - 7}px`;
     dot.style.opacity = '0';
-    dot.style.transform = 'scale(0.2)';
+    dot.style.transform = 'scale(0.3)';
   });
-  setTimeout(() => dot.remove(), 450);
+  setTimeout(() => dot.remove(), 600);
   cartNavItem.classList.add('cart-bounce');
-  setTimeout(() => cartNavItem.classList.remove('cart-bounce'), 400);
+  setTimeout(() => cartNavItem.classList.remove('cart-bounce'), 500);
 }
 
 // ─── THICKNESS ────────────────────────────────────────────────────
@@ -254,7 +278,8 @@ function selectThick(id, thick) {
     btn.classList.toggle('active', parseInt(btn.dataset.thick) === thick);
   });
   const priceEl = document.querySelector(`#price-${id}`);
-  if (priceEl) priceEl.innerHTML = `${price.toLocaleString()} <small>${t('currency')}</small>`;
+  if (priceEl) priceEl.innerHTML = `${price.toLocaleString('ru-RU')} <small>${t('currency')}</small>`;
+  if (window.hap) window.hap('selection');
 }
 
 // ─── ADD TO CART ──────────────────────────────────────────────────
@@ -268,8 +293,10 @@ function addToCartFromCard(productId) {
   qtyState[productId] = 1;
   if (qtyEl) qtyEl.value = 1;
   const lang = getCurrentLang();
-  const msg = lang === 'uz' ? `${prod.name} savatga qo'shildi` : lang === 'ru' ? `${prod.name} добавлен в корзину` : `${prod.name} added to cart`;
-  showToast(msg);
+  const msg = lang === 'uz' ? `${prod.name} savatga qo'shildi`
+            : lang === 'ru' ? `${prod.name} добавлен в корзину`
+            : `${prod.name} added to cart`;
+  showToast(msg, 'success');
   flyToCart(productId);
 }
 
@@ -286,9 +313,9 @@ function toggleFavCard(e, id) {
   }
   const lang = getCurrentLang();
   const msg = isNowFav
-    ? (lang === 'ru' ? `${prod.name} добавлен в избранное` : `${prod.name} added`)
-    : (lang === 'ru' ? `${prod.name} удалён из избранного` : `${prod.name} removed`);
-  showToast(msg);
+    ? (lang === 'ru' ? `Добавлено в избранное` : lang === 'uz' ? "Sevimlilarga qo'shildi" : `Added to favorites`)
+    : (lang === 'ru' ? `Удалено из избранного` : lang === 'uz' ? "Sevimlilardan olib tashlandi" : `Removed`);
+  showToast(msg, isNowFav ? 'success' : 'default');
 }
 
 // ─── PRODUCT DETAIL ───────────────────────────────────────────────
@@ -305,8 +332,8 @@ function openDetail(id) {
 
   const thickBtns = prod.thicknesses.map(t2 => `
     <button class="thick-sel-btn ${t2 === th ? 'active' : ''}"
-      onclick="selectDetailThick(${id}, ${t2})" id="dthick-${id}-${t2}">
-      ${t2} мм
+      onclick="selectDetailThick(${id}, ${t2})" data-detail-thick="${t2}" id="dthick-${id}-${t2}">
+      ${t2} ${lang === 'uz' || lang === 'en' ? 'mm' : 'мм'}
     </button>`).join('');
 
   const specRows = [
@@ -315,13 +342,14 @@ function openDetail(id) {
     [t('density'),   `${prod.density} кг/м³`],
     [t('size'),      `${prod.size} мм`],
     [t('lambda'),    `${prod.lambda} Вт/м·К`],
-    [t('packArea'),  `${prod.packArea} м²`],
+    [t('packArea'),  `${getPackArea(prod, th)} м²`],
     [t('packSlabs'), `${prod.packSlabs} шт`],
   ].map(([k, v]) =>
     `<div class="spec-row"><span class="spec-key">${k}</span><span class="spec-val">${v}</span></div>`
   ).join('');
 
   const addLabel = lang === 'uz' ? 'Savatga' : lang === 'en' ? 'Add to cart' : 'В корзину';
+  const placeholder = catIconSvg(prod.category) || '';
 
   const html = `
     <div class="overlay" id="detail-overlay" onclick="if(event.target===this)closeDetail()">
@@ -329,28 +357,32 @@ function openDetail(id) {
         <div class="sheet-handle"></div>
         <div class="sheet-header">
           <div>
-            <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">${catLabel}</div>
+            <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:2px">${catLabel}</div>
             <span class="sheet-title">${prod.name}</span>
           </div>
           <button class="sheet-close" onclick="closeDetail()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            ${typeof ic === 'function' ? ic('close') : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`}
           </button>
         </div>
         <div class="sheet-body">
-          <div style="background:var(--bg);border-radius:12px;height:180px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:14px;">
+          <div style="background:linear-gradient(135deg,var(--bg2),var(--bg3));border-radius:18px;height:200px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:16px;position:relative">
             ${prod.image
-              ? `<img src="${prod.image}" alt="${prod.name}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" onerror="this.parentElement.innerHTML='<span style=font-size:64px;color:var(--text-3)>${CAT_ICON_SVG[prod.category]||""}</span>'">`
-              : `<span style="color:var(--text-3)">${CAT_ICON_SVG[prod.category]||''}</span>`}
+              ? `<img src="${prod.image}" alt="${prod.name}" style="width:100%;height:100%;object-fit:cover;border-radius:18px;" onerror="this.parentElement.querySelector('.det-placeholder').style.display='flex';this.style.display='none'">
+                 <span class="det-placeholder" style="display:none;color:var(--text-3);font-size:80px">${placeholder}</span>`
+              : `<span style="color:var(--text-3);font-size:80px">${placeholder}</span>`}
           </div>
-          <p style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:16px;">${desc}</p>
-          <div style="background:var(--bg);border-radius:10px;padding:0 12px;margin-bottom:16px;">${specRows}</div>
-          <div style="margin-bottom:16px;">
-            <div style="font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:8px;letter-spacing:0.3px;text-transform:uppercase;">${t('thickness')}</div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;" id="detail-thick-wrap-${id}">${thickBtns}</div>
+          <p style="font-size:13.5px;color:var(--text-2);line-height:1.65;margin-bottom:18px;">${desc}</p>
+          <div style="background:var(--bg);border-radius:14px;padding:4px 14px;margin-bottom:18px;border:1px solid var(--border)">${specRows}</div>
+          <div style="margin-bottom:18px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:10px;letter-spacing:0.5px;text-transform:uppercase;">${t('thickness')}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="detail-thick-wrap-${id}">${thickBtns}</div>
           </div>
-          <div style="margin-bottom:16px;" id="detail-price-${id}">
-            <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:4px;">${t('price')}</div>
-            <div style="font-size:24px;font-weight:900;color:var(--text);letter-spacing:-0.5px;">${price.toLocaleString()} <span style="font-size:13px;font-weight:500;color:var(--text-2);">${t('currency')}</span></div>
+          <div style="margin-bottom:18px;" id="detail-price-${id}">
+            <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">${t('price')}</div>
+            <div style="font-family:var(--font-display);font-size:28px;font-weight:900;color:var(--text);letter-spacing:-0.8px;line-height:1;">
+              ${price.toLocaleString('ru-RU')}
+              <span style="font-size:14px;font-weight:500;color:var(--text-2);margin-left:4px">${t('currency')}</span>
+            </div>
           </div>
           <button class="btn-red full" onclick="addToCartFromDetail(${id});closeDetail()">
             ${addLabel}
@@ -360,11 +392,16 @@ function openDetail(id) {
     </div>`;
 
   document.body.insertAdjacentHTML('beforeend', html);
+  if (window.hap) window.hap('light');
 }
 
 function closeDetail() {
   const el = document.querySelector('#detail-overlay');
-  if (el) el.remove();
+  if (!el) return;
+  el.style.animation = 'fadeIn .2s ease reverse';
+  const sheet = el.querySelector('.sheet');
+  if (sheet) sheet.style.animation = 'sheetIn .25s ease reverse';
+  setTimeout(() => el.remove(), 220);
 }
 
 function selectDetailThick(id, thick) {
@@ -373,12 +410,16 @@ function selectDetailThick(id, thick) {
   if (!prod) return;
   const price = getPrice(prod, thick);
   document.querySelectorAll(`#detail-thick-wrap-${id} .thick-sel-btn`).forEach(btn => {
-    btn.classList.toggle('active', btn.textContent.trim().startsWith(thick.toString()));
+    btn.classList.toggle('active', parseInt(btn.dataset.detailThick) === thick);
   });
   const priceEl = document.querySelector(`#detail-price-${id}`);
   if (priceEl) priceEl.innerHTML = `
-    <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:4px;">${t('price')}</div>
-    <div style="font-size:24px;font-weight:900;color:var(--text);letter-spacing:-0.5px;">${price.toLocaleString()} <span style="font-size:13px;font-weight:500;color:var(--text-2);">${t('currency')}</span></div>`;
+    <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">${t('price')}</div>
+    <div style="font-family:var(--font-display);font-size:28px;font-weight:900;color:var(--text);letter-spacing:-0.8px;line-height:1;">
+      ${price.toLocaleString('ru-RU')}
+      <span style="font-size:14px;font-weight:500;color:var(--text-2);margin-left:4px">${t('currency')}</span>
+    </div>`;
+  if (window.hap) window.hap('selection');
 }
 
 function addToCartFromDetail(productId) {
@@ -387,8 +428,11 @@ function addToCartFromDetail(productId) {
   const thick = thickState[productId] || prod.thicknesses[0];
   Cart.add(productId, thick, 1);
   const lang = getCurrentLang();
-  const msg = lang === 'ru' ? `${prod.name} добавлен в корзину` : `${prod.name} added`;
-  showToast(msg);
+  const msg = lang === 'ru' ? `${prod.name} добавлен в корзину`
+            : lang === 'uz' ? `${prod.name} savatga qo'shildi`
+            : `${prod.name} added`;
+  showToast(msg, 'success');
+  flyToCart(productId);
 }
 
 // ─── LANG BUTTONS ─────────────────────────────────────────────────
@@ -397,6 +441,7 @@ function initLangButtons() {
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === lang);
     btn.addEventListener('click', () => {
+      if (window.hap) window.hap('selection');
       setLang(btn.dataset.lang);
       if (typeof onLangChange === 'function') onLangChange();
     });
@@ -454,7 +499,7 @@ async function sendToB24(formData, cartItems) {
           PHONE: [{ VALUE: formData.phone, VALUE_TYPE: 'WORK' }],
           COMMENTS: comment,
           SOURCE_ID: 'WEB',
-          SOURCE_DESCRIPTION: 'Telegram Mini App v3',
+          SOURCE_DESCRIPTION: 'Telegram Mini App v4',
           OPPORTUNITY: total,
           CURRENCY_ID: 'UZS',
         }
