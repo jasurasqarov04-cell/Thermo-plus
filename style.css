@@ -994,7 +994,7 @@ body {
   opacity: .3;
 }
 
-/* Basalt forge canvas — sits above blobs, below content */
+/* Basalt shield canvas — fire below, wool barrier, cool air above */
 .basalt-canvas {
   position: absolute;
   inset: 0;
@@ -1004,14 +1004,34 @@ body {
   pointer-events: auto;
   display: block;
 }
-/* Make the hero feel taller/more cinematic for the forge animation */
 .hero-forge {
-  min-height: 460px;
+  min-height: 520px;
   padding-top: 36px;
   padding-bottom: 36px;
 }
-/* Text gets a soft glow on hover-area pages with canvas */
-.hero-forge .hero-content { text-shadow: 0 1px 12px rgba(0,0,0,.18); }
+/* The animation tells the story on its own — hide the soft parallax blobs
+   inside the hero-forge so the wool/fire layout reads clearly */
+.hero-forge .hero-blob,
+.hero-forge .hero-grid { display: none; }
+/* Strong readability for white text sitting over the canvas */
+.hero-forge .hero-content,
+.hero-forge .hero-eyebrow,
+.hero-forge .hero-headline,
+.hero-forge .hero-desc,
+.hero-forge .hero-stats { text-shadow: 0 2px 14px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.5); }
+.hero-forge .hero-eyebrow {
+  background: rgba(0,0,0,.32);
+  border-color: rgba(255,255,255,.18);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
+}
+.hero-forge .hero-stats {
+  background: rgba(0,0,0,.30);
+  border-radius: 16px;
+  padding: 12px 14px;
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+}
 
 /* Subtle grid lines */
 .hero-grid {
