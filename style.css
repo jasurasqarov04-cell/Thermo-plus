@@ -1154,19 +1154,32 @@ body {
   border: 1px solid rgba(231,228,220,.5);
 }
 .feature-card:hover { transform: translateY(-2px); box-shadow: var(--sh-sm); }
+.feature-card:hover .feature-icon-bg {
+  transform: rotate(-4deg) scale(1.06);
+  box-shadow: 0 8px 18px -6px rgba(199,18,25,.35);
+}
 .feature-card .feature-icon-bg {
   position: absolute;
-  right: -10px;
-  top: -10px;
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: var(--red-bg);
+  right: -8px;
+  top: -8px;
+  width: 62px;
+  height: 62px;
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 90% at 30% 20%, rgba(255,255,255,.65), transparent 60%),
+    linear-gradient(135deg, #FFE6E2 0%, #FFC7BD 60%, #FFB3A0 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--red);
-  opacity: .85;
+  box-shadow:
+    0 4px 12px -4px rgba(199,18,25,.25),
+    inset 0 1px 0 rgba(255,255,255,.7),
+    inset 0 -2px 6px rgba(199,18,25,.10);
+  transition: transform .35s var(--ease-out), box-shadow .25s var(--ease-out);
+}
+.feature-card .feature-icon-bg svg {
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,.55));
 }
 
 .feature-title {

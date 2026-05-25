@@ -46,21 +46,40 @@ const ICONS = {
   </svg>`,
 
   // Feature icons
-  fire: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 17c0 1.7-1.5 2-1.5 3.5 1.3-.4 2-1.5 2-3 0-1 1-1 1-1.5 0 0 .5 1 1.5 1.5.4-2 .5-3.7-.5-5 0 1-1 1.5-1.5 1.5s-1-.5-1.5-1c-1.5-1.5-1.5-3.5 0-5 0 1 1.5 2 2.5 2 1.5 0 2.5-1 2.5-3-.5.6-1.5 1-2.5 1-1.5 0-2.5-1.5-2.5-3-1.5 0-3 1.5-3 3 0 1 .5 1.5 1 2-1 .5-2 1.5-2 3.5 0 1.5 1 3 3 3z"/>
+  fire: `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" aria-hidden="true">
+    <path d="M12 2.5c.6 2.2-.4 3.6-1.5 5.1-1.3 1.8-2.6 3.5-2.6 6.4a6 6 0 0 0 12 .2c0-2-.7-3.5-1.7-4.6-.1 1.4-.9 2.3-1.7 2.3-1.5 0-1.5-1.8-1-3.4.6-2.2-.3-4.6-3.5-6z"
+      fill="currentColor" fill-opacity=".18"
+      stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M12 13.5c1.5 1.2 2.4 2.6 2.4 4.1a2.4 2.4 0 1 1-4.8 0c0-1.5.9-2.9 2.4-4.1z"
+      fill="currentColor"/>
   </svg>`,
-  sound: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-    <path d="M15.5 8.5a5 5 0 0 1 0 7"/>
-    <path d="M19 5a9 9 0 0 1 0 14"/>
+  sound: `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" aria-hidden="true">
+    <path d="M11 5 6 9H3a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h3l5 4z"
+      fill="currentColor" fill-opacity=".18"
+      stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M15.2 8.4a4.6 4.6 0 0 1 0 7.2"
+      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    <path d="M18.4 5.6a8.6 8.6 0 0 1 0 12.8"
+      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none" opacity=".6"/>
   </svg>`,
-  thermo: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-    <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
-    <circle cx="11.5" cy="18" r="1.2" fill="currentColor"/>
+  thermo: `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" aria-hidden="true">
+    <path d="M14 13.5V4a2.5 2.5 0 0 0-5 0v9.5a4.5 4.5 0 1 0 5 0z"
+      fill="currentColor" fill-opacity=".15"
+      stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    <circle cx="11.5" cy="17.5" r="2.4" fill="currentColor"/>
+    <line x1="11.5" y1="11.5" x2="11.5" y2="15.5"
+      stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M16 6h1.6M16 9h1.6M16 12h1.6"
+      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".7"/>
   </svg>`,
-  eco: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-    <path d="M21 3c0 9.5-9 18-18 18 0-9.5 9-18 18-18z"/>
-    <path d="M9 14C12 12 15 8 18 5"/>
+  eco: `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" aria-hidden="true">
+    <path d="M20.5 3.5C20 13 13 19.5 4 20.5c-.5-9 6-15.5 16.5-17z"
+      fill="currentColor" fill-opacity=".18"
+      stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M5 19.5C9.5 16 14 12 18.5 5.5"
+      stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M9.5 14.5c1.4-.4 2.6-1.2 3.5-2.3M14 10.5c1-.7 1.9-1.6 2.6-2.6"
+      stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity=".55"/>
   </svg>`,
   shield: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
