@@ -351,6 +351,33 @@ function openDetail(id) {
   const addLabel = lang === 'uz' ? 'Savatga' : lang === 'en' ? 'Add to cart' : 'В корзину';
   const placeholder = catIconSvg(prod.category) || '';
 
+  // Related products — same category, up to 8 items
+  const related = (window.PRODUCTS_DATA || []).filter(o => o.id !== id && o.category === prod.category).slice(0, 8);
+  const relatedHtml = related.length ? `
+    <div class="related-section">
+      <div class="related-section-title">${t('related')}</div>
+      <div class="related-rail">
+        ${related.map(o => {
+          const rCatLabel = (CAT_LABELS[lang] || CAT_LABELS['ru'])[o.category] || o.category;
+          const rPlaceholder = catIconSvg(o.category) || '';
+          return `
+          <div class="related-card" onclick="closeDetail();setTimeout(()=>openDetail(${o.id}),260)">
+            <div class="related-card-img">
+              <span class="related-card-fallback">${rPlaceholder}</span>
+              ${o.image ? `<img src="${o.image}" alt="${(o.name || '').replace(/"/g, '&quot;')}" onerror="this.style.display='none'">` : ''}
+            </div>
+            <div class="related-card-body">
+              <div class="related-card-cat">${rCatLabel}</div>
+              <div class="related-card-name">${o.name}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : '';
+
+  // Factory icon
+  const factorySvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"/><path d="M3 20V11l5 3V9l5 3V7l5 3-1 10"/></svg>`;
+
   const html = `
     <div class="overlay" id="detail-overlay" onclick="if(event.target===this)closeDetail()">
       <div class="sheet">
@@ -371,6 +398,7 @@ function openDetail(id) {
                  <span class="det-placeholder" style="display:none;color:var(--text-3);font-size:80px">${placeholder}</span>`
               : `<span style="color:var(--text-3);font-size:80px">${placeholder}</span>`}
           </div>
+          <span class="made-badge"><span class="dot"></span>${factorySvg}<span>${t('madeInKhorezm')}</span></span>
           <p style="font-size:13.5px;color:var(--text-2);line-height:1.65;margin-bottom:18px;">${desc}</p>
           <div style="background:var(--bg);border-radius:14px;padding:4px 14px;margin-bottom:18px;border:1px solid var(--border)">${specRows}</div>
           <div style="margin-bottom:18px;">
@@ -387,6 +415,7 @@ function openDetail(id) {
           <button class="btn-red full" onclick="addToCartFromDetail(${id});closeDetail()">
             ${addLabel}
           </button>
+          ${relatedHtml}
         </div>
       </div>
     </div>`;

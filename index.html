@@ -4,7 +4,17 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
   <meta name="theme-color" content="#F4F2EE"/>
-  <title>THERMO PLUS — Каталог</title>
+  <meta name="description" content="Каталог базальтовой ваты THERMO PLUS — фасадные, кровельные, универсальные плиты. Производство в Хорезмской области."/>
+  <meta name="format-detection" content="telephone=no"/>
+  <title>THERMO PLUS · Каталог</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="apple-touch-icon" href="images/logo.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:title" content="THERMO PLUS — Каталог базальтовой ваты"/>
+  <meta property="og:description" content="Огнестойкая базальтовая вата, цена за м². Производство в Хорезме."/>
+  <meta property="og:image" content="images/logo.png"/>
   <link rel="stylesheet" href="style.css"/>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -45,6 +55,7 @@
     </div>
 
     <div class="cat-scroll" id="cat-scroll"></div>
+    <div class="results-meta" id="results-meta" aria-live="polite"></div>
     <div class="prod-grid" id="prod-grid"></div>
     <div class="empty-state hidden" id="empty-state">
       <div class="empty-icon" data-icon="search"></div>
@@ -52,6 +63,15 @@
       <div class="empty-text" data-i18n="noResultsText">Попробуйте другой запрос</div>
     </div>
   </div>
+
+  <footer class="site-footer">
+    <div class="footer-brand">THERMO PLUS</div>
+    <div class="footer-meta">
+      © <span id="footer-year"></span>
+      <span class="footer-dot"></span>
+      <span data-i18n="footerMeta">Хорезм, Ургенч · Ташкент</span>
+    </div>
+  </footer>
 
   <button class="float-cart" id="float-cart-btn" onclick="location.href='checkout.html'" style="display:none">
     <span data-icon="cart"></span>
@@ -158,8 +178,27 @@ function renderProducts() {
     empty.classList.add('hidden');
     grid.innerHTML = filtered.map(p => buildProductCard(p, thickState[p.id])).join('');
   }
+  renderResultsMeta(filtered.length);
   Cart.updateBadge();
   if (typeof injectIcons === 'function') injectIcons();
+}
+
+function renderResultsMeta(count) {
+  const el = document.getElementById('results-meta');
+  if (!el) return;
+  const filterActive = activeCat !== 'all';
+  const queryActive = !!searchQuery;
+  if (!filterActive && !queryActive) { el.innerHTML = ''; return; }
+  const lang = getCurrentLang();
+  const closeSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+  const parts = [`<span><strong>${count}</strong> ${t('foundN')}</span>`];
+  if (filterActive) {
+    parts.push(`<span class="filter-chip">
+      ${getCatLabel(activeCat, lang)}
+      <button type="button" onclick="filterCat('all')" aria-label="clear">${closeSvg}</button>
+    </span>`);
+  }
+  el.innerHTML = parts.join('');
 }
 
 function onLangChange() {
@@ -194,6 +233,7 @@ async function init() {
 }
 
 init();
+const _y = document.getElementById('footer-year'); if (_y) _y.textContent = new Date().getFullYear();
 </script>
 </body>
 </html>

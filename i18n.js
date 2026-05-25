@@ -37,6 +37,9 @@ const I18N = {
     viewProducts:"Mahsulotlarga o'tish",contactManager:"Menejer bilan bog'lanish",
     requestCalc:"Aniq hisoblash so'rash",
     toCatalog:"Katalog",toCalc:"Hisoblash",
+    foundN:"topildi",related:"O'xshash mahsulotlar",
+    madeInKhorezm:"Xorazm zavodida ishlab chiqarilgan",
+    footerMeta:"Xorazm v., Urganch · Toshkent",
   },
   ru: {
     appName:"THERMO PLUS",appSub:"Производитель базальтовой ваты",
@@ -76,6 +79,9 @@ const I18N = {
     viewProducts:"Смотреть продукты",contactManager:"Связаться с менеджером",
     requestCalc:"Запросить расчёт",
     toCatalog:"Каталог",toCalc:"Калькулятор",
+    foundN:"найдено",related:"Похожие товары",
+    madeInKhorezm:"Произведено на заводе в Хорезме",
+    footerMeta:"Хорезм, Ургенч · Ташкент",
   },
   en: {
     appName:"THERMO PLUS",appSub:"Basalt wool manufacturer",
@@ -115,6 +121,9 @@ const I18N = {
     viewProducts:"View products",contactManager:"Contact manager",
     requestCalc:"Request calculation",
     toCatalog:"Catalog",toCalc:"Calculator",
+    foundN:"found",related:"Related products",
+    madeInKhorezm:"Manufactured at Khorezm plant",
+    footerMeta:"Khorezm, Urgench · Tashkent",
   }
 };
 

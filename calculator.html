@@ -4,7 +4,13 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
   <meta name="theme-color" content="#F4F2EE"/>
-  <title>THERMO PLUS — Калькулятор</title>
+  <meta name="description" content="Калькулятор расчёта базальтовой ваты · THERMO PLUS"/>
+  <meta name="format-detection" content="telephone=no"/>
+  <title>THERMO PLUS · Калькулятор</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="apple-touch-icon" href="images/logo.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link rel="stylesheet" href="style.css"/>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -45,6 +51,15 @@
     </div>
     <div style="padding:18px 16px 24px" id="calc-body"></div>
   </div>
+
+  <footer class="site-footer">
+    <div class="footer-brand">THERMO PLUS</div>
+    <div class="footer-meta">
+      © <span id="footer-year"></span>
+      <span class="footer-dot"></span>
+      <span data-i18n="footerMeta">Хорезм, Ургенч · Ташкент</span>
+    </div>
+  </footer>
 
   <nav class="bottom-nav">
     <a class="nav-item" href="about.html">
@@ -96,6 +111,7 @@ async function init() {
 function onLangChange() { renderCalcStep(); }
 
 init();
+const _y = document.getElementById('footer-year'); if (_y) _y.textContent = new Date().getFullYear();
 </script>
 </body>
 </html>
