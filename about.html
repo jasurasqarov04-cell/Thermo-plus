@@ -42,13 +42,14 @@
 
   <div class="page">
 
-    <!-- HERO with parallax layers -->
-    <div class="hero" data-parallax-container>
+    <!-- HERO with parallax layers + basalt forge canvas -->
+    <div class="hero hero-forge" data-parallax-container>
       <div class="hero-bg">
         <div class="hero-grid"></div>
         <div class="hero-blob b1 parallax" data-parallax="0.18" data-depth="1.2"></div>
         <div class="hero-blob b2 parallax" data-parallax="0.10" data-depth="0.8"></div>
         <div class="hero-blob b3 parallax" data-parallax="0.25" data-depth="2.0"></div>
+        <canvas id="basaltCanvas" class="basalt-canvas" aria-hidden="true"></canvas>
       </div>
 
       <div class="hero-content">
@@ -240,6 +241,7 @@
 <script src="i18n.js"></script>
 <script src="app.js"></script>
 <script src="animations.js"></script>
+<script src="basalt-anim.js" defer></script>
 <script>
 if (window.Telegram?.WebApp) {
   Telegram.WebApp.ready();

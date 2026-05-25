@@ -131,6 +131,24 @@ function renderFavorites() {
   if (typeof injectIcons === 'function') injectIcons();
 }
 
+// On favorites page, removing a heart should immediately drop the card with a soft fade
+const _origToggleFavCard = window.toggleFavCard;
+window.toggleFavCard = function(e, id) {
+  const wasFav = Favs.has(id);
+  _origToggleFavCard(e, id);
+  if (wasFav) {
+    const card = e.target.closest('.prod-card');
+    if (card) {
+      card.style.transition = 'transform .35s cubic-bezier(.5,-0.2,.25,1.2), opacity .35s ease';
+      card.style.transform = 'scale(.9) translateY(8px)';
+      card.style.opacity = '0';
+      setTimeout(() => renderFavorites(), 320);
+    } else {
+      renderFavorites();
+    }
+  }
+};
+
 function onLangChange() { renderFavorites(); }
 
 async function init() {

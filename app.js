@@ -68,12 +68,45 @@ const Favs = {
     else ids.push(productId);
     Store.set(Favs._key, ids);
     if (window.hap) window.hap(isFav ? 'soft' : 'medium');
+    updateHeaderFavBadge(!isFav);
     return !isFav;
   },
   has: (productId) => Favs.ids().includes(productId),
   count: () => Favs.ids().length,
   products: () => (window.PRODUCTS_DATA || []).filter(p => Favs.ids().includes(p.id))
 };
+
+// ─── HEADER FAVORITES BUTTON (auto-injected) ──────────────────────
+function injectHeaderFavBtn() {
+  const header = document.querySelector('.header');
+  if (!header || header.querySelector('.header-fav-btn')) return;
+  const isOnFavPage = /favorites\.html/.test(location.pathname);
+  const langWrap = header.querySelector('.lang-wrap');
+  const btn = document.createElement('a');
+  btn.className = 'header-fav-btn';
+  btn.href = 'favorites.html';
+  btn.setAttribute('aria-label', 'Favorites');
+  if (isOnFavPage) btn.setAttribute('aria-current', 'page');
+  btn.innerHTML = `<span class="header-fav-icon" data-icon="heart"></span><span class="header-fav-count" id="header-fav-count">0</span>`;
+  if (langWrap) header.insertBefore(btn, langWrap);
+  else header.appendChild(btn);
+  if (typeof injectIcons === 'function') injectIcons();
+  updateHeaderFavBadge(false);
+}
+
+function updateHeaderFavBadge(animate) {
+  const count = (typeof Favs !== 'undefined') ? Favs.count() : 0;
+  const btn = document.querySelector('.header-fav-btn');
+  const badge = document.getElementById('header-fav-count');
+  if (!btn || !badge) return;
+  badge.textContent = count;
+  btn.classList.toggle('has-favs', count > 0);
+  if (animate) {
+    btn.classList.remove('bump');
+    void btn.offsetWidth;
+    btn.classList.add('bump');
+  }
+}
 
 // ─── PRICE CALC ───────────────────────────────────────────────────
 // Linear scaling against the base (50mm) price.
@@ -311,11 +344,39 @@ function toggleFavCard(e, id) {
     btn.innerHTML = heartSvg(isNowFav);
     btn.classList.toggle('fav-active', isNowFav);
   }
+  if (isNowFav) flyToFavorites(e.currentTarget || btn);
   const lang = getCurrentLang();
   const msg = isNowFav
     ? (lang === 'ru' ? `Добавлено в избранное` : lang === 'uz' ? "Sevimlilarga qo'shildi" : `Added to favorites`)
     : (lang === 'ru' ? `Удалено из избранного` : lang === 'uz' ? "Sevimlilardan olib tashlandi" : `Removed`);
   showToast(msg, isNowFav ? 'success' : 'default');
+}
+
+// Tiny heart flying from card → header favorites button
+function flyToFavorites(sourceEl) {
+  const target = document.querySelector('.header-fav-btn');
+  if (!sourceEl || !target) return;
+  const a = sourceEl.getBoundingClientRect();
+  const b = target.getBoundingClientRect();
+  const ghost = document.createElement('span');
+  ghost.innerHTML = (typeof ic === 'function')
+    ? ic('heartFilled')
+    : '<svg width="22" height="22" viewBox="0 0 24 24" fill="#C71219"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+  ghost.style.cssText = `
+    position:fixed; left:${a.left + a.width/2 - 11}px; top:${a.top + a.height/2 - 11}px;
+    width:22px; height:22px; color:#C71219;
+    pointer-events:none; z-index:9999;
+    filter: drop-shadow(0 4px 12px rgba(199,18,25,.45));
+    transition: transform .65s cubic-bezier(.5,-0.2,.25,1.2), opacity .65s ease;
+  `;
+  document.body.appendChild(ghost);
+  const tx = b.left + b.width/2 - (a.left + a.width/2);
+  const ty = b.top  + b.height/2 - (a.top + a.height/2);
+  requestAnimationFrame(() => {
+    ghost.style.transform = `translate(${tx}px, ${ty}px) scale(.55) rotate(-12deg)`;
+    ghost.style.opacity = '0.2';
+  });
+  setTimeout(() => ghost.remove(), 700);
 }
 
 // ─── PRODUCT DETAIL ───────────────────────────────────────────────
@@ -476,6 +537,7 @@ function initLangButtons() {
     });
   });
   Cart.updateBadge();
+  injectHeaderFavBtn();
 }
 
 // ─── FLOAT CART ───────────────────────────────────────────────────
