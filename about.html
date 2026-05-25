@@ -42,8 +42,15 @@
 
   <div class="page">
 
-    <!-- HERO — live fire test: real torch + real basalt slab + animated flame -->
-    <div class="hero hero-shield" data-parallax-container>
+    <!-- HERO with parallax layers -->
+    <div class="hero" data-parallax-container>
+      <div class="hero-bg">
+        <div class="hero-grid"></div>
+        <div class="hero-blob b1 parallax" data-parallax="0.18" data-depth="1.2"></div>
+        <div class="hero-blob b2 parallax" data-parallax="0.10" data-depth="0.8"></div>
+        <div class="hero-blob b3 parallax" data-parallax="0.25" data-depth="2.0"></div>
+      </div>
+
       <div class="hero-content">
         <span class="hero-eyebrow" id="hero-eyebrow">
           <span class="dot"></span>
@@ -55,25 +62,6 @@
           <span class="accent">надёжная теплоизоляция</span>
         </h1>
         <p class="hero-desc" id="hero-d">Натуральный материал для утепления фасадов, кровли и перегородок. Сертифицировано ГОСТ и ISO.</p>
-
-        <!-- LIVE FIRE TEST: torch flames the slab — slab doesn't burn -->
-        <figure class="shield-scene" aria-label="Огневое испытание: горелка нагревает базальтовую плиту — плита не горит">
-          <span class="shield-temp shield-temp-hot">1000°C</span>
-          <span class="shield-badge" id="shield-badge">не горит</span>
-
-          <div class="shield-torch">
-            <img src="images/gas-torch.png" alt="Газовая горелка" loading="eager" decoding="async"/>
-            <span class="flame-anchor" data-flame-source aria-hidden="true"></span>
-          </div>
-
-          <canvas id="basaltCanvas" class="shield-flame-canvas" aria-hidden="true"></canvas>
-
-          <div class="shield-slab">
-            <span class="flame-anchor" data-flame-target aria-hidden="true"></span>
-            <img src="images/basalt-slab.png" alt="Базальтовая плита THERMO PLUS" loading="eager" decoding="async"/>
-          </div>
-        </figure>
-
         <div class="hero-actions">
           <a href="index.html" class="btn-red" id="hero-btn1">
             <span data-icon="grid"></span>
@@ -252,7 +240,6 @@
 <script src="i18n.js"></script>
 <script src="app.js"></script>
 <script src="animations.js"></script>
-<script src="basalt-anim.js" defer></script>
 <script>
 if (window.Telegram?.WebApp) {
   Telegram.WebApp.ready();
@@ -267,7 +254,6 @@ const HOME_TX = {
     heroH:"Bazalt vata —",
     heroHAccent:"ishonchli issiqlik izolyatsiyasi",
     heroD:"Fasad, tom va bo'limlarni issiqlik izolyatsiyasi uchun tabiiy material. GOST va ISO sertifikati.",
-    shieldBadge:"yonmaydi",
     btn1:"Katalog",btn2:"Hisoblash",
     stat1:"yong'in bardoshliligi",stat2:"yillik quvvat",stat3:"xizmat muddati",
     featuresLabel:"Nima uchun THERMO PLUS",
@@ -290,7 +276,6 @@ const HOME_TX = {
     heroH:"Базальтовая вата —",
     heroHAccent:"надёжная теплоизоляция",
     heroD:"Натуральный материал для утепления фасадов, кровли и перегородок. Сертифицирован по ГОСТ и ISO.",
-    shieldBadge:"не горит",
     btn1:"Перейти в каталог",btn2:"Рассчитать",
     stat1:"огнестойкость",stat2:"годовая мощность",stat3:"срок службы",
     featuresLabel:"Почему THERMO PLUS",
@@ -313,7 +298,6 @@ const HOME_TX = {
     heroH:"Basalt wool —",
     heroHAccent:"reliable thermal insulation",
     heroD:"Natural material for insulating facades, roofs and partitions. GOST & ISO certified.",
-    shieldBadge:"does not burn",
     btn1:"View catalog",btn2:"Calculate",
     stat1:"fire resistance",stat2:"annual capacity",stat3:"service life",
     featuresLabel:"Why THERMO PLUS",
@@ -346,8 +330,6 @@ function renderHome() {
   btn1.innerHTML = `<span data-icon="grid"></span><span>${tx.btn1}</span>`;
   const btn2 = document.getElementById('hero-btn2');
   btn2.innerHTML = `<span data-icon="calc"></span><span>${tx.btn2}</span>`;
-  const shieldB = document.getElementById('shield-badge');
-  if (shieldB && tx.shieldBadge) shieldB.textContent = tx.shieldBadge;
 
   document.getElementById('stat1').textContent = tx.stat1;
   document.getElementById('stat2').textContent = tx.stat2;
