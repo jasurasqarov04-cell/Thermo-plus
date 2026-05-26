@@ -1,19 +1,38 @@
 // ═══════════════════════════════════════════════════════════════
-// THERMO PLUS — Calculator v4 — Guided Step Flow
+// THERMO PLUS — Calculator v5 — System-type aware
+// ═══════════════════════════════════════════════════════════════
+//
+// Flow: Region → Surface → System type → Area → Budget → Result
+//
+// Density / thickness recommendations follow:
+//   • ГОСТ Р 56707-2023 (СФТК / wet plaster facade)
+//   • ROCKWOOL / TECHNONICOL / Эковер application guides
+//   • SP 50.13330 thermal protection norms
+//
+// Density cheat-sheet (kg/m³):
+//   skat (pitched roof, mansard) ........ 30–50   → THERMO LITE / ACOUSTIC / UNIVERSAL
+//   internal partitions ................. 30–50   → THERMO LITE / ACOUSTIC
+//   ventilated facade (single layer) .... 70–90   → THERMO VENT FACADE / VENT PRO
+//   three-layer brick masonry ........... 50–80   → THERMO UNIVERSAL / STANDART / VENT
+//   wet plaster facade (low-rise) ....... 90–120  → THERMO FACADE EXTRA / FACADE / COMFORT
+//   wet plaster facade (high-rise) ...... 140–160 → THERMO FACADE PRO / PREMIUM
+//   flat roof (bottom layer) ............ 100–140 → THERMO ROOF L / L PROF / STANDART
+//   flat roof (top / exploited) ......... 140–190 → THERMO ROOF STANDART / U / U PROF
+//   floor under screed .................. 140–170 → THERMO FLOOR / STANDART / PRO
 // ═══════════════════════════════════════════════════════════════
 
 let calcState = {
   step: 1,
   region: null,
   surface: null,
-  construction: null,
+  systemType: null,
   area: null,
   goal: null,
 };
 
 const TOTAL_STEPS = 5;
 
-// ─── DATA ─────────────────────────────────────────────────────────
+// ─── REGIONS ──────────────────────────────────────────────────────
 const REGIONS = {
   uz: [
     { id:'tashkent', label:'Тошкент', sub:'Зона 3' },
@@ -47,6 +66,7 @@ const REGIONS = {
   ]
 };
 
+// ─── SURFACES (step 2) ────────────────────────────────────────────
 const SURFACES = {
   ru: [
     { id:'facade', icon:'facade', label:'Фасад', sub:'Внешние стены здания' },
@@ -71,52 +91,100 @@ const SURFACES = {
   ]
 };
 
-const CONSTRUCTIONS = {
-  ru: [
-    { id:'brick',    label:'Кирпич' },
-    { id:'gas',      label:'Газоблок' },
-    { id:'concrete', label:'Бетон' },
-    { id:'frame',    label:'Каркас' },
-    { id:'mono',     label:'Монолит' },
-    { id:'other',    label:'Другое' },
-  ],
-  uz: [
-    { id:'brick',    label:"G'isht" },
-    { id:'gas',      label:'Gaz blok' },
-    { id:'concrete', label:'Beton' },
-    { id:'frame',    label:'Karkas' },
-    { id:'mono',     label:'Monolit' },
-    { id:'other',    label:'Boshqa' },
-  ],
-  en: [
-    { id:'brick',    label:'Brick' },
-    { id:'gas',      label:'Aerated block' },
-    { id:'concrete', label:'Concrete' },
-    { id:'frame',    label:'Frame' },
-    { id:'mono',     label:'Monolithic' },
-    { id:'other',    label:'Other' },
-  ]
+// ─── SYSTEM TYPES (step 3, depends on surface) ────────────────────
+const SYSTEM_TYPES = {
+  ru: {
+    facade: [
+      { id:'facade_wet',   icon:'facade', label:'Мокрый фасад',        sub:'Штукатурный фасад (СФТК)' },
+      { id:'facade_vent',  icon:'wall',   label:'Вентилируемый фасад', sub:'Навесной с воздушным зазором' },
+      { id:'facade_brick', icon:'wall',   label:'Облицовка кирпичом',  sub:'Трёхслойная кладка / сайдинг' },
+    ],
+    roof: [
+      { id:'roof_pitch', icon:'roof', label:'Скатная кровля', sub:'Мансарда, чердак, стропила' },
+      { id:'roof_flat',  icon:'roof', label:'Плоская кровля', sub:'Мембрана, битум, наплавление' },
+    ],
+    floor: [
+      { id:'floor_screed', icon:'floor', label:'Пол под стяжку', sub:'Бетонная стяжка, тёплый пол' },
+      { id:'floor_float',  icon:'floor', label:'Плавающий пол',  sub:'Между лагами, звукоизоляция' },
+    ],
+    wall: [
+      { id:'wall_inner',  icon:'wall', label:'Перегородка',        sub:'Каркасная стена, ГКЛ' },
+      { id:'wall_acoust', icon:'wall', label:'Звукоизоляция',      sub:'Усиленная акустика' },
+    ],
+    tech: [
+      { id:'tech_pipe',  icon:'tech', label:'Трубопроводы',  sub:'Тепло- и паропроводы' },
+      { id:'tech_equip', icon:'tech', label:'Оборудование',  sub:'Котлы, агрегаты, дымоходы' },
+    ],
+  },
+  uz: {
+    facade: [
+      { id:'facade_wet',   icon:'facade', label:'Ho\'l fasad',           sub:'Shtukaturkali fasad (SFTK)' },
+      { id:'facade_vent',  icon:'wall',   label:'Ventilyatsiyali fasad', sub:'Havo bo\'shliqli osma' },
+      { id:'facade_brick', icon:'wall',   label:'G\'isht qoplama',       sub:'Uch qavatli devor / siding' },
+    ],
+    roof: [
+      { id:'roof_pitch', icon:'roof', label:'Qiya tom',  sub:'Mansarda, cherdak' },
+      { id:'roof_flat',  icon:'roof', label:'Tekis tom', sub:'Membrana, bitum' },
+    ],
+    floor: [
+      { id:'floor_screed', icon:'floor', label:'Stяjka ostidagi pol', sub:'Beton stяjka, issiq pol' },
+      { id:'floor_float',  icon:'floor', label:'Suzuvchi pol',         sub:'Lag\'lar orasi, akustika' },
+    ],
+    wall: [
+      { id:'wall_inner',  icon:'wall', label:'Bo\'lim',           sub:'Karkasli devor, GKL' },
+      { id:'wall_acoust', icon:'wall', label:'Ovoz izolyatsiyasi', sub:'Kuchaytirilgan akustika' },
+    ],
+    tech: [
+      { id:'tech_pipe',  icon:'tech', label:'Trubalar',  sub:'Issiqlik va bug\' trubalari' },
+      { id:'tech_equip', icon:'tech', label:'Uskunalar', sub:'Qozonlar, agregatlar' },
+    ],
+  },
+  en: {
+    facade: [
+      { id:'facade_wet',   icon:'facade', label:'Wet (plaster) facade', sub:'ETICS / SFTK system' },
+      { id:'facade_vent',  icon:'wall',   label:'Ventilated facade',    sub:'Curtain wall with air gap' },
+      { id:'facade_brick', icon:'wall',   label:'Brick-clad facade',    sub:'Three-layer masonry / siding' },
+    ],
+    roof: [
+      { id:'roof_pitch', icon:'roof', label:'Pitched roof', sub:'Attic / mansard / rafters' },
+      { id:'roof_flat',  icon:'roof', label:'Flat roof',    sub:'Membrane / bitumen' },
+    ],
+    floor: [
+      { id:'floor_screed', icon:'floor', label:'Floor under screed', sub:'Concrete screed, heated floor' },
+      { id:'floor_float',  icon:'floor', label:'Floating floor',     sub:'Between joists, acoustic' },
+    ],
+    wall: [
+      { id:'wall_inner',  icon:'wall', label:'Internal partition', sub:'Frame wall, drywall' },
+      { id:'wall_acoust', icon:'wall', label:'Sound insulation',   sub:'Enhanced acoustics' },
+    ],
+    tech: [
+      { id:'tech_pipe',  icon:'tech', label:'Pipework',  sub:'Heat / steam pipes' },
+      { id:'tech_equip', icon:'tech', label:'Equipment', sub:'Boilers, units, flues' },
+    ],
+  },
 };
 
+// ─── BUDGET / GOAL (step 5) ───────────────────────────────────────
 const GOALS = {
   ru: [
-    { id:'economy',  icon:'package', label:'Экономный', sub:'Минимальные требования' },
-    { id:'optimal',  icon:'shield',  label:'Оптимальный', sub:'Рекомендуемый уровень' },
-    { id:'maximum',  icon:'spark',   label:'Максимальный', sub:'Максимальная защита' },
+    { id:'economy', icon:'package', label:'Эконом',     sub:'Минимально допустимая плотность' },
+    { id:'optimal', icon:'shield',  label:'Оптимальный', sub:'Рекомендуемый по нормам' },
+    { id:'maximum', icon:'spark',   label:'Максимум',   sub:'Повышенная плотность и запас' },
   ],
   uz: [
-    { id:'economy',  icon:'package', label:'Tejamkor', sub:'Minimal talablar' },
-    { id:'optimal',  icon:'shield',  label:'Optimal', sub:'Tavsiya etiladigan' },
-    { id:'maximum',  icon:'spark',   label:'Maksimal', sub:'Maksimal himoya' },
+    { id:'economy', icon:'package', label:'Tejamkor', sub:'Minimal ruxsat etilgan zichlik' },
+    { id:'optimal', icon:'shield',  label:'Optimal',  sub:'Normalar bo\'yicha tavsiya etilgan' },
+    { id:'maximum', icon:'spark',   label:'Maksimal', sub:'Yuqori zichlik va zaxira' },
   ],
   en: [
-    { id:'economy',  icon:'package', label:'Economy', sub:'Minimum requirements' },
-    { id:'optimal',  icon:'shield',  label:'Optimal', sub:'Recommended level' },
-    { id:'maximum',  icon:'spark',   label:'Maximum', sub:'Maximum protection' },
+    { id:'economy', icon:'package', label:'Economy',  sub:'Minimum acceptable density' },
+    { id:'optimal', icon:'shield',  label:'Optimal',  sub:'Code-recommended level' },
+    { id:'maximum', icon:'spark',   label:'Maximum',  sub:'Higher density and margin' },
   ]
 };
 
-// R-values required by zone and surface
+// ─── REQUIRED R-VALUES by zone (m²·K/W) ───────────────────────────
+//   surface key + system can be more granular; we use the surface base.
 const R_REQUIRED = {
   facade: { 2: 2.0, 3: 2.8, 4: 3.5 },
   roof:   { 2: 2.5, 3: 3.5, 4: 4.5 },
@@ -130,22 +198,77 @@ const ZONE_BY_REGION = {
   namangan: 3, fergana: 3, nukus: 4, termez: 2, other: 3
 };
 
-const PRODUCT_BY_SURFACE = {
-  facade: [1, 3, 4],
-  roof:   [5, 6, 7],
-  floor:  [1, 2],
-  wall:   [1, 2],
-  tech:   [7, 8],
+// ─── PRODUCT RECOMMENDATIONS by system type × budget ──────────────
+// Each entry is an array of product IDs in order of preference.
+// First product = primary recommendation; the rest are fallbacks
+// in case the primary is missing from products.json.
+const PRODUCT_RECOMMENDATIONS = {
+  // Wet plaster facade (СФТК) — high compressive & tensile strength required
+  facade_wet:   { economy: [7, 8],     optimal: [9, 8],     maximum: [10, 11]  }, //  90 / 120 / 140-160
+  // Ventilated facade — single-layer hydrophobic boards, ≥70 kg/m³
+  facade_vent:  { economy: [5, 4],     optimal: [5, 6],     maximum: [6, 5]    }, //  70 / 70-80 / 80
+  // Three-layer masonry / siding cladding — medium density
+  facade_brick: { economy: [3, 4],     optimal: [4, 5],     maximum: [5, 6]    }, //  50 / 60-70 / 70-80
+
+  // Pitched roof — no load on insulation, low density is fine
+  roof_pitch:   { economy: [1, 2],     optimal: [3, 4],     maximum: [4, 12]   }, //  30-40 / 50-60 / 60-100
+  // Flat roof — heavy load, multi-layer; bottom→top by goal
+  roof_flat:    { economy: [12, 13],   optimal: [14, 13],   maximum: [15, 16]  }, // 100-120 / 140 / 170-190
+
+  // Floor under screed — rigid plates
+  floor_screed: { economy: [17],       optimal: [18, 17],   maximum: [19, 18]  }, // 140 / 150 / 170
+  // Floating floor / between joists — soft acoustic
+  floor_float:  { economy: [2, 1],     optimal: [3, 2],     maximum: [17, 3]   }, //  40 / 50 / 140
+
+  // Internal partition — light boards
+  wall_inner:   { economy: [1],        optimal: [2, 1],     maximum: [3, 2]    }, //  30 / 40 / 50
+  // Enhanced sound insulation
+  wall_acoust:  { economy: [2],        optimal: [2, 3],     maximum: [3, 4]    }, //  40 / 40-50 / 50-60
+
+  // Pipework — heat & temperature stable
+  tech_pipe:    { economy: [4, 3],     optimal: [7, 4],     maximum: [8, 7]    }, //  60 / 90 / 100
+  // Equipment / units
+  tech_equip:   { economy: [4, 5],     optimal: [7, 6],     maximum: [8, 9]    }, //  60-70 / 80-90 / 100-120
 };
 
 function getZone(regionId) { return ZONE_BY_REGION[regionId] || 3; }
 
-function calcThickness(surface, zone, goalId, lambda = 0.036) {
+// Surface key from systemType (e.g. 'facade_wet' → 'facade')
+function surfaceFromSystem(systemType) {
+  if (!systemType) return 'facade';
+  if (systemType.startsWith('facade')) return 'facade';
+  if (systemType.startsWith('roof'))   return 'roof';
+  if (systemType.startsWith('floor'))  return 'floor';
+  if (systemType.startsWith('wall'))   return 'wall';
+  if (systemType.startsWith('tech'))   return 'tech';
+  return 'facade';
+}
+
+// Required thickness in mm, given the chosen product's lambda
+function calcThickness(surface, zone, goalId, lambda) {
+  const lam = lambda || 0.036;
   const rRequired = (R_REQUIRED[surface] || R_REQUIRED.facade)[zone] || 2.8;
   const goalMultiplier = goalId === 'economy' ? 0.85 : goalId === 'maximum' ? 1.2 : 1.0;
   const rTarget = rRequired * goalMultiplier;
-  const thicknessMm = Math.ceil(rTarget * lambda * 1000 / 10) * 10;
+  // δ = R · λ (meters) → mm; round up to nearest 10 mm
+  const thicknessMm = Math.ceil(rTarget * lam * 1000 / 10) * 10;
   return Math.max(50, Math.min(200, thicknessMm));
+}
+
+// Snap calculated thickness to one (or two) of the product's available
+// slab sizes. If product offers [50, 100] and we need 130mm — we return
+// 150 (= 100 + 50, two-layer install).
+function pickProductThickness(prod, recThick) {
+  const sizes = (prod && prod.thicknesses) || [50, 100];
+  const max = Math.max(...sizes);
+  // single slab is enough
+  for (const s of sizes) if (s >= recThick) return s;
+  // need 2 layers — combine largest + best second
+  const rest = recThick - max;
+  let second = sizes[0];
+  for (const s of sizes) if (s >= rest && s <= second) second = s;
+  // Always prefer multiples of 10
+  return max + second;
 }
 
 function ico(name) {
@@ -173,7 +296,7 @@ function renderCalcStep() {
   const body = document.getElementById('calc-body');
   if (!body) return;
 
-  const stepLabel = `${step} / ${TOTAL_STEPS}`;
+  const stepLabel = `${Math.min(step, TOTAL_STEPS)} / ${TOTAL_STEPS}`;
 
   switch (step) {
     case 1: renderStep1(body, lang, stepLabel); break;
@@ -196,7 +319,7 @@ function stepHeader(stepLabel, titleKey, subKey) {
     </div>`;
 }
 
-// STEP 1 — Region
+// ─── STEP 1 — Region ──────────────────────────────────────────────
 function renderStep1(body, lang, stepLabel) {
   const regions = REGIONS[lang] || REGIONS.ru;
   const grid = regions.map(r => `
@@ -222,7 +345,7 @@ function selectRegion(id) {
   renderCalcStep();
 }
 
-// STEP 2 — Surface
+// ─── STEP 2 — Surface ─────────────────────────────────────────────
 function renderStep2(body, lang, stepLabel) {
   const surfaces = SURFACES[lang] || SURFACES.ru;
   const cards = surfaces.map(s => `
@@ -242,35 +365,41 @@ function renderStep2(body, lang, stepLabel) {
 }
 
 function selectSurface(id) {
+  if (calcState.surface !== id) calcState.systemType = null;
   calcState.surface = id;
   calcState.step = 3;
   if (window.hap) window.hap('selection');
   renderCalcStep();
 }
 
-// STEP 3 — Construction
+// ─── STEP 3 — System Type (depends on surface) ────────────────────
 function renderStep3(body, lang, stepLabel) {
-  const constructions = CONSTRUCTIONS[lang] || CONSTRUCTIONS.ru;
-  const chips = constructions.map(c => `
-    <div class="choice-card-sm ${calcState.construction === c.id ? 'selected' : ''}"
-      onclick="selectConstruction('${c.id}')">
-      <div class="choice-icon" data-icon="wall"></div>
-      <div class="choice-title">${c.label}</div>
+  const surface = calcState.surface || 'facade';
+  const list = (SYSTEM_TYPES[lang] || SYSTEM_TYPES.ru)[surface] || [];
+  const cards = list.map(s => `
+    <div class="choice-card ${calcState.systemType === s.id ? 'selected' : ''}"
+      onclick="selectSystemType('${s.id}')">
+      <div class="choice-icon" data-icon="${s.icon}"></div>
+      <div class="choice-text">
+        <div class="choice-title">${s.label}</div>
+        <div class="choice-sub">${s.sub}</div>
+      </div>
+      <div class="choice-check"></div>
     </div>`).join('');
 
   body.innerHTML = `
     ${stepHeader(stepLabel, 'calcStep3', 'calcStep3sub')}
-    <div class="choice-grid-2">${chips}</div>`;
+    <div class="choice-grid">${cards}</div>`;
 }
 
-function selectConstruction(id) {
-  calcState.construction = id;
+function selectSystemType(id) {
+  calcState.systemType = id;
   calcState.step = 4;
   if (window.hap) window.hap('selection');
   renderCalcStep();
 }
 
-// STEP 4 — Area
+// ─── STEP 4 — Area ────────────────────────────────────────────────
 function renderStep4(body, lang, stepLabel) {
   const areaLabel = lang === 'uz' ? 'Maydon (м²)' : lang === 'en' ? 'Area (m²)' : 'Площадь (м²)';
   const placeholder = lang === 'uz' ? 'Masalan: 120' : lang === 'en' ? 'e.g. 120' : 'Например: 120';
@@ -281,7 +410,6 @@ function renderStep4(body, lang, stepLabel) {
     ? 'Enter the approximate area of the surface to be insulated'
     : 'Введите приблизительную площадь поверхности для утепления';
 
-  // Quick area chips
   const quick = [50, 100, 150, 200, 300];
   const quickHtml = quick.map(v => `
     <button class="thick-chip-s" type="button" onclick="setAreaQuick(${v})">${v} м²</button>
@@ -332,7 +460,7 @@ function submitArea() {
   renderCalcStep();
 }
 
-// STEP 5 — Goal
+// ─── STEP 5 — Goal / Budget ───────────────────────────────────────
 function renderStep5(body, lang, stepLabel) {
   const goals = GOALS[lang] || GOALS.ru;
   const cards = goals.map(g => `
@@ -358,60 +486,66 @@ function selectGoal(id) {
   renderCalcStep();
 }
 
-// STEP 6 — Result
+// ─── STEP 6 — Result ──────────────────────────────────────────────
+function pickRecommendedProduct(systemType, goalId) {
+  const map = PRODUCT_RECOMMENDATIONS[systemType];
+  if (!map || !window.PRODUCTS_DATA) return null;
+  const ids = map[goalId] || map.optimal || [];
+  for (const pid of ids) {
+    const p = PRODUCTS_DATA.find(pr => pr.id === pid);
+    if (p) return p;
+  }
+  return PRODUCTS_DATA[0] || null;
+}
+
 function renderResult(body, lang) {
   const bar = document.getElementById('progress-bar');
   if (bar) bar.style.width = '100%';
 
-  const zone = getZone(calcState.region || 'tashkent');
-  const surface = calcState.surface || 'facade';
-  const goal = calcState.goal || 'optimal';
-  const area = calcState.area || 100;
-  const recThick = calcThickness(surface, zone, goal);
+  const zone     = getZone(calcState.region || 'tashkent');
+  const goal     = calcState.goal || 'optimal';
+  const area     = calcState.area || 100;
+  const systemType = calcState.systemType
+    // fallback if user somehow lands on result without picking systemType
+    || ((calcState.surface || 'facade') === 'facade' ? 'facade_wet'
+      : (calcState.surface || 'facade') === 'roof'   ? 'roof_pitch'
+      : (calcState.surface || 'facade') === 'floor'  ? 'floor_screed'
+      : (calcState.surface || 'facade') === 'wall'   ? 'wall_inner'
+      : 'tech_pipe');
+  const surface  = surfaceFromSystem(systemType);
 
-  const preferredIds = PRODUCT_BY_SURFACE[surface] || [1];
-  let recProduct = null;
-  if (window.PRODUCTS_DATA) {
-    for (const pid of preferredIds) {
-      const p = PRODUCTS_DATA.find(pr => pr.id === pid);
-      if (p && p.thicknesses.some(t => t >= recThick || t === Math.max(...p.thicknesses))) {
-        recProduct = p;
-        break;
-      }
-    }
-    if (!recProduct) recProduct = PRODUCTS_DATA[0];
-  }
+  const recProduct = pickRecommendedProduct(systemType, goal);
+  const lam = (recProduct && recProduct.lambda) || 0.036;
+  const reqThick = calcThickness(surface, zone, goal, lam);
+  const recThick = recProduct ? pickProductThickness(recProduct, reqThick) : reqThick;
 
-  const packArea = recProduct ? getPackArea(recProduct, recThick) : 6.48;
+  const packArea    = recProduct ? getPackArea(recProduct, recThick) : 6.48;
   const packsNeeded = Math.ceil(area / packArea);
-  const totalArea = area * 1.05;
-  const price = recProduct ? getPrice(recProduct, recThick) : 0;
-  const totalCost = Math.round(price * totalArea);
+  const totalArea   = area * 1.05;
+  const price       = recProduct ? getPrice(recProduct, recThick) : 0;
+  const totalCost   = Math.round(price * totalArea);
 
-  const regions_flat = (REGIONS[lang] || REGIONS.ru);
-  const regionLabel = regions_flat.find(r => r.id === calcState.region)?.label || '—';
-  const surfaces_flat = (SURFACES[lang] || SURFACES.ru);
-  const surfaceLabel = surfaces_flat.find(s => s.id === surface)?.label || '—';
-  const goals_flat = (GOALS[lang] || GOALS.ru);
-  const goalLabel = goals_flat.find(g => g.id === goal)?.label || '—';
+  const regionLabel = (REGIONS[lang] || REGIONS.ru).find(r => r.id === calcState.region)?.label || '—';
+  const surfaceLabel = (SURFACES[lang] || SURFACES.ru).find(s => s.id === surface)?.label || '—';
+  const systemTypeLabel = ((SYSTEM_TYPES[lang] || SYSTEM_TYPES.ru)[surface] || [])
+    .find(s => s.id === systemType)?.label || '—';
+  const goalLabel = (GOALS[lang] || GOALS.ru).find(g => g.id === goal)?.label || '—';
 
   const labels = {
     resultTitle: lang === 'uz' ? 'Hisoblash natijasi' : lang === 'en' ? 'Calculation result' : 'Результат расчёта',
-    thickness: lang === 'uz' ? 'Qalinlik' : lang === 'en' ? 'Thickness' : 'Толщина',
-    area: lang === 'uz' ? 'Maydon' : lang === 'en' ? 'Area' : 'Площадь',
-    packs: lang === 'uz' ? 'Paket' : lang === 'en' ? 'Packs' : 'Упаковок',
-    cost: lang === 'uz' ? 'Taxminiy narx' : lang === 'en' ? 'Est. cost' : 'Ориент. стоимость',
-    recProd: lang === 'uz' ? 'Tavsiya etiladigan mahsulot' : lang === 'en' ? 'Recommended product' : 'Рекомендованный продукт',
-    note: lang === 'uz'
-      ? 'Bu taxminiy hisoblash. Aniq loyiha uchun muhandisimizga murojaat qiling.'
-      : lang === 'en'
-      ? 'This is an approximate calculation. Contact our engineer for a detailed project.'
-      : 'Это приблизительный расчёт. Для точного проекта обратитесь к нашему инженеру.',
-    viewProd: lang === 'uz' ? "Mahsulotni ko'rish" : lang === 'en' ? 'View product' : 'Смотреть продукт',
-    recalc: lang === 'uz' ? 'Qayta hisoblash' : lang === 'en' ? 'Recalculate' : 'Пересчитать',
-    contact: lang === 'uz' ? "Menejer bilan bog'lanish" : lang === 'en' ? 'Contact manager' : 'Связаться с менеджером',
-    yourInput: lang === 'uz' ? 'Siz tanladingiz' : lang === 'en' ? 'Your selections' : 'Ваши параметры',
-    addToCart: lang === 'uz' ? "Savatga qo'shish" : lang === 'en' ? 'Add to cart' : 'Добавить в корзину',
+    thickness:   lang === 'uz' ? 'Qalinlik'           : lang === 'en' ? 'Thickness'         : 'Толщина',
+    density:     lang === 'uz' ? 'Zichlik'            : lang === 'en' ? 'Density'           : 'Плотность',
+    area:        lang === 'uz' ? 'Maydon'             : lang === 'en' ? 'Area'              : 'Площадь',
+    packs:       lang === 'uz' ? 'Paket'              : lang === 'en' ? 'Packs'             : 'Упаковок',
+    cost:        lang === 'uz' ? 'Taxminiy narx'      : lang === 'en' ? 'Est. cost'         : 'Ориент. стоимость',
+    recProd:     lang === 'uz' ? 'Tavsiya etiladigan mahsulot' : lang === 'en' ? 'Recommended product' : 'Рекомендованный продукт',
+    note:        lang === 'uz' ? 'Bu taxminiy hisoblash. Aniq loyiha uchun muhandisimizga murojaat qiling.'
+              : lang === 'en'  ? 'This is an approximate calculation. Contact our engineer for a detailed project.'
+              : 'Это приблизительный расчёт. Для точного проекта обратитесь к нашему инженеру.',
+    recalc:      lang === 'uz' ? 'Qayta hisoblash'         : lang === 'en' ? 'Recalculate'      : 'Пересчитать',
+    contact:     lang === 'uz' ? "Menejer bilan bog'lanish": lang === 'en' ? 'Contact manager' : 'Связаться с менеджером',
+    yourInput:   lang === 'uz' ? 'Siz tanladingiz'         : lang === 'en' ? 'Your selections' : 'Ваши параметры',
+    addToCart:   lang === 'uz' ? "Savatga qo'shish"        : lang === 'en' ? 'Add to cart'     : 'Добавить в корзину',
   };
 
   body.innerHTML = `
@@ -431,9 +565,9 @@ function renderResult(body, lang) {
           <div class="result-item-unit">мм</div>
         </div>
         <div class="result-item">
-          <div class="result-item-label">${labels.area}</div>
-          <div class="result-item-val" data-count="${area}">${area}</div>
-          <div class="result-item-unit">м²</div>
+          <div class="result-item-label">${labels.density}</div>
+          <div class="result-item-val" data-count="${recProduct ? recProduct.density : 0}">${recProduct ? recProduct.density : '—'}</div>
+          <div class="result-item-unit">кг/м³</div>
         </div>
         <div class="result-item">
           <div class="result-item-label">${labels.packs}</div>
@@ -460,6 +594,7 @@ function renderResult(body, lang) {
       <div class="summary-chips">
         <span class="summary-chip">${regionLabel}</span>
         <span class="summary-chip">${surfaceLabel}</span>
+        <span class="summary-chip">${systemTypeLabel}</span>
         <span class="summary-chip">${goalLabel}</span>
         <span class="summary-chip">${area} м²</span>
       </div>
@@ -494,7 +629,7 @@ function addCalcToCart(productId, thick, packs) {
 }
 
 function resetCalc() {
-  calcState = { step: 1, region: null, surface: null, construction: null, area: null, goal: null };
+  calcState = { step: 1, region: null, surface: null, systemType: null, area: null, goal: null };
   if (window.hap) window.hap('soft');
   renderCalcStep();
 }
