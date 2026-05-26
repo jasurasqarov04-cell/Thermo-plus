@@ -167,8 +167,8 @@
   {
     "id": 7,
     "name": "THERMO FACADE EXTRA",
-    "category": "facade",
-    "categoryLabel": "Fasad | Фасад",
+    "category": "vent",
+    "categoryLabel": "Vent. fasad | Вент. фасад",
     "density": 90,
     "thicknesses": [
       50,
@@ -182,11 +182,11 @@
     "packSlabs": 6,
     "pricePerM2": 44366,
     "badge": "EXTRA",
-    "desc_uz": "Shtukaturka fasadi uchun. 10 m gacha bo'lgan binolarda asosiy qatlam, deraza va eshik qirralarini bezash uchun.",
-    "desc_ru": "Негорючие плиты для штукатурного фасада. Основной слой для зданий до 10 м, рассечки и обрамления оконных проёмов.",
-    "desc_en": "Non-combustible boards for plaster facade. Main insulation layer for buildings up to 10 m, window and door surround framing.",
+    "desc_uz": "Osilgan ventilyatsiyali fasad uchun yuqori zichlikdagi plitalar. Bir qatlamli izolyatsiyaning tashqi qatlami, gidrofob yuza.",
+    "desc_ru": "Плиты повышенной плотности для навесных вентилируемых фасадов. Внешний слой однослойной системы, гидрофобная поверхность.",
+    "desc_en": "Higher-density boards for curtain ventilated facades. Outer layer of single-layer systems, hydrophobic surface.",
     "installTypes": [
-      "facade_wet"
+      "facade_vent"
     ],
     "image": "images/facadeextra.webp"
   },

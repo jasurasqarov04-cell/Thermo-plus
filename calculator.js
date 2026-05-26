@@ -199,36 +199,56 @@ const ZONE_BY_REGION = {
 };
 
 // ─── PRODUCT RECOMMENDATIONS by system type × budget ──────────────
-// Each entry is an array of product IDs in order of preference.
-// First product = primary recommendation; the rest are fallbacks
-// in case the primary is missing from products.json.
+// Mapping is based on THERMO PLUS official product catalog:
+//
+//   УНИВЕРСАЛЬНАЯ:  id 1  30  THERMO LITE
+//                   id 2  40  THERMO ACOUSTIC
+//                   id 3  50  THERMO UNIVERSAL
+//                   id 4  60  THERMO STANDART
+//   ВЕНТ-ФАСАД:     id 5  70  THERMO VENT-FACADE
+//                   id 6  80  THERMO VENT PRO
+//                   id 7  90  THERMO FACADE EXTRA
+//   МОКРЫЙ ФАСАД:   id 8  100 THERMO FACADE
+//                   id 9  120 THERMO FACADE COMFORT
+//                   id 10 140 THERMO FACADE PRO
+//                   id 11 160 THERMO FACADE PREMIUM
+//   КРОВЛЯ:         id 12 100 THERMO ROOF L
+//                   id 13 120 THERMO ROOF L PROF
+//                   id 14 140 THERMO ROOF STANDART
+//                   id 15 170 THERMO ROOF U
+//                   id 16 190 THERMO ROOF U PROF
+//   ПОЛ:            id 17 140 THERMO FLOOR
+//                   id 18 150 THERMO FLOOR STANDART
+//                   id 19 170 THERMO FLOOR PRO
+//
+// First id in each array = primary pick; rest are fallbacks.
 const PRODUCT_RECOMMENDATIONS = {
-  // Wet plaster facade (СФТК) — high compressive & tensile strength required
-  facade_wet:   { economy: [7, 8],     optimal: [9, 8],     maximum: [10, 11]  }, //  90 / 120 / 140-160
-  // Ventilated facade — single-layer hydrophobic boards, ≥70 kg/m³
-  facade_vent:  { economy: [5, 4],     optimal: [5, 6],     maximum: [6, 5]    }, //  70 / 70-80 / 80
-  // Three-layer masonry / siding cladding — medium density
-  facade_brick: { economy: [3, 4],     optimal: [4, 5],     maximum: [5, 6]    }, //  50 / 60-70 / 70-80
+  // ─── МОКРЫЙ фасад (штукатурный/СФТК) — серия THERMO FACADE ───
+  facade_wet:   { economy: [8],         optimal: [9, 8],     maximum: [10, 11]  }, // 100 / 120 / 140-160
+  // ─── ВЕНТИЛИРУЕМЫЙ фасад — серия VENT + FACADE EXTRA ───
+  facade_vent:  { economy: [5],         optimal: [6, 5],     maximum: [7, 6]    }, //  70 /  80 /  90
+  // ─── Облицовка кирпичом / трёхслойная кладка — универсал ───
+  facade_brick: { economy: [3, 4],      optimal: [4, 5],     maximum: [5, 6]    }, //  50-60 / 60-70 / 70-80
 
-  // Pitched roof — no load on insulation, low density is fine
-  roof_pitch:   { economy: [1, 2],     optimal: [3, 4],     maximum: [4, 12]   }, //  30-40 / 50-60 / 60-100
-  // Flat roof — heavy load, multi-layer; bottom→top by goal
-  roof_flat:    { economy: [12, 13],   optimal: [14, 13],   maximum: [15, 16]  }, // 100-120 / 140 / 170-190
+  // ─── Скатная кровля (мансарда, чердак) — без нагрузки ───
+  roof_pitch:   { economy: [1, 2],      optimal: [2, 3],     maximum: [3, 4]    }, //  30-40 / 40-50 / 50-60
+  // ─── Плоская кровля — серия THERMO ROOF ───
+  roof_flat:    { economy: [12, 13],    optimal: [14, 13],   maximum: [15, 16]  }, // 100-120 / 140 / 170-190
 
-  // Floor under screed — rigid plates
-  floor_screed: { economy: [17],       optimal: [18, 17],   maximum: [19, 18]  }, // 140 / 150 / 170
-  // Floating floor / between joists — soft acoustic
-  floor_float:  { economy: [2, 1],     optimal: [3, 2],     maximum: [17, 3]   }, //  40 / 50 / 140
+  // ─── Пол под стяжку — серия THERMO FLOOR ───
+  floor_screed: { economy: [17],        optimal: [18, 17],   maximum: [19, 18]  }, // 140 / 150 / 170
+  // ─── Плавающий пол / между лагами — лёгкая универсал ───
+  floor_float:  { economy: [2, 1],      optimal: [3, 4],     maximum: [17, 4]   }, //  40 / 50-60 / 140
 
-  // Internal partition — light boards
-  wall_inner:   { economy: [1],        optimal: [2, 1],     maximum: [3, 2]    }, //  30 / 40 / 50
-  // Enhanced sound insulation
-  wall_acoust:  { economy: [2],        optimal: [2, 3],     maximum: [3, 4]    }, //  40 / 40-50 / 50-60
+  // ─── Внутренняя перегородка — лёгкая универсал ───
+  wall_inner:   { economy: [1],         optimal: [2, 1],     maximum: [3, 2]    }, //  30 / 40 / 50
+  // ─── Звукоизоляция — серия THERMO ACOUSTIC ───
+  wall_acoust:  { economy: [2],         optimal: [2, 3],     maximum: [3, 4]    }, //  40 / 40-50 / 50-60
 
-  // Pipework — heat & temperature stable
-  tech_pipe:    { economy: [4, 3],     optimal: [7, 4],     maximum: [8, 7]    }, //  60 / 90 / 100
-  // Equipment / units
-  tech_equip:   { economy: [4, 5],     optimal: [7, 6],     maximum: [8, 9]    }, //  60-70 / 80-90 / 100-120
+  // ─── Трубопроводы — термостойкие средней плотности ───
+  tech_pipe:    { economy: [4, 3],      optimal: [5, 6],     maximum: [6, 7]    }, //  60 / 70-80 / 80-90
+  // ─── Оборудование, котлы — жёсткие плиты ───
+  tech_equip:   { economy: [4, 5],      optimal: [7, 6],     maximum: [8, 9]    }, //  60-70 / 80-90 / 100-120
 };
 
 function getZone(regionId) { return ZONE_BY_REGION[regionId] || 3; }
@@ -257,17 +277,17 @@ function calcThickness(surface, zone, goalId, lambda) {
 
 // Snap calculated thickness to one (or two) of the product's available
 // slab sizes. If product offers [50, 100] and we need 130mm — we return
-// 150 (= 100 + 50, two-layer install).
+// 150 (= 100 + 50, two-layer install). Need 170mm → 200 (100+100).
 function pickProductThickness(prod, recThick) {
   const sizes = (prod && prod.thicknesses) || [50, 100];
-  const max = Math.max(...sizes);
   // single slab is enough
   for (const s of sizes) if (s >= recThick) return s;
-  // need 2 layers — combine largest + best second
+  // need 2 layers — combine largest + the smallest slab that still
+  // covers the remainder (fall back to the largest slab if nothing fits)
+  const max = Math.max(...sizes);
   const rest = recThick - max;
-  let second = sizes[0];
-  for (const s of sizes) if (s >= rest && s <= second) second = s;
-  // Always prefer multiples of 10
+  let second = max;
+  for (const s of sizes) if (s >= rest && s < second) second = s;
   return max + second;
 }
 
